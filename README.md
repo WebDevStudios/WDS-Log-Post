@@ -18,6 +18,8 @@ filter log posts in the admin screen.
 
 **N.B.** By default, only Super Admins can see the WDS Log post type in the UI. See how to filter that below.
 
+![Typical Log](/../screenshots/typical-log.png?raw=true)
+
 ## Installation ##
 
 * Place the plugin folder in the usual place and activate it from the plugins screen
