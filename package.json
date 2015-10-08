@@ -1,0 +1,20 @@
+{
+  "name": "wds-log-post",
+  "title": "WDS Log Post",
+  "version": "0.1.0",
+  "description": "Creates a logging post type",
+  "author": {
+    "name": "WebDevStudios",
+    "url": "http://webdevstudios.com"
+  },
+  "license": "GPLv2",
+  "devDependencies": {
+    "grunt": "latest",
+    "grunt-banner": "^0.6.0",
+    "grunt-contrib-cssmin": "^0.14.0",
+    "grunt-contrib-watch": "latest",
+    "grunt-sass": "^1.0.0",
+    "grunt-wp-i18n": "latest",
+    "load-grunt-tasks": "latest"
+  }
+}

@@ -1,0 +1,9 @@
+/**
+ * WDS Log Post - v0.1.0 - 2015-10-08
+ * http://webdevstudios.com
+ *
+ * Copyright (c) 2015;
+ * Licensed GPLv2+
+ */
+
+.wds-log-tag{padding:3px 9px;border-radius:8px}.metabox-holder .postbox-container .empty-container{border:none}.wp-editor-area{margin-top:0}#wp-content-wrap{padding-top:0}a[href*="post-new.php"][href*="{$this->post_type}"]{display:none;visibility:hidden}

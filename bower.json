@@ -1,0 +1,18 @@
+{
+  "name": "wds-log-post",
+  "description": "Creates a logging post type",
+  "license": "GPLv2",
+  "authors": [
+    "WebDevStudios"
+  ],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+  }
+}
