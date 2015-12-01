@@ -95,7 +95,7 @@ class WDSLP_Wds_Log extends CPT_Core {
 	public function alter_list_view() {
 		$screen = get_current_screen();
 
-		if ( $this->post_type !== $screen->post_type ) {
+		if ( null === $screen || $this->post_type !== $screen->post_type ) {
 			return;
 		}
 
@@ -130,7 +130,7 @@ HTML;
 		global $post;
 		$screen = get_current_screen();
 
-		if ( $this->post_type !== $screen->post_type ) {
+		if ( null === $screen || $this->post_type !== $screen->post_type ) {
 			return;
 		}
 
@@ -228,9 +228,7 @@ HTML;
 	}
 
 	public function add_taxonomy_filter() {
-		$screen = get_current_screen();
-
-		if ( 'edit' !== $screen->base || $this->post_type !== $screen->post_type ) {
+		if ( ! $this->edit_screen_check() ) {
 			return;
 		}
 
@@ -252,9 +250,7 @@ HTML;
 	}
 
 	public function filter_admin_list_taxonomy( $query ) {
-		$screen = get_current_screen();
-
-		if ( 'edit' !== $screen->base || $this->post_type !== $screen->post_type || ! isset( $_GET[ $this->filter_key ] ) ) {
+		if ( ! $this->edit_screen_check()  || ! isset( $_GET[ $this->filter_key ] ) ) {
 			return;
 		}
 
@@ -271,5 +267,10 @@ HTML;
 		$query->set( 'tax_query', $tax_query );
 
 		return $query;
+	}
+
+	protected function edit_screen_check() {
+		$screen = get_current_screen();
+		return null !== $screen && 'edit' === $screen->base && $this->post_type === $screen->post_type;
 	}
 }
