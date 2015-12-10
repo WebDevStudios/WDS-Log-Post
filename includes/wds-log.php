@@ -270,6 +270,10 @@ HTML;
 	}
 
 	protected function edit_screen_check() {
+		if ( ! is_admin() ) {
+			return;
+		}
+
 		$screen = get_current_screen();
 		return null !== $screen && 'edit' === $screen->base && $this->post_type === $screen->post_type;
 	}
