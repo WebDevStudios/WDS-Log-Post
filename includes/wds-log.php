@@ -190,7 +190,9 @@ HTML;
 		}
 
 		// Change "Edit" to "View"
-		$actions['edit'] = strtr( $actions['edit'], array( 'Edit' => 'View Details' ) );
+		if ( isset( $actions['edit'] ) ) {
+			$actions['edit'] = strtr( $actions['edit'], array( 'Edit' => 'View Details' ) );
+		}
 
 		unset( $actions['inline hide-if-no-js'] );
 		unset( $actions['view'] );
