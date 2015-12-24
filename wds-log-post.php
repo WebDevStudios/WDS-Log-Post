@@ -290,6 +290,9 @@ class WDS_Log_Post {
 	 */
 	public static function log_message( $title, $full_message = '', $term_slug = 'general' ) {
 		$self = self::get_instance();
+		if ( ! $self->custom_taxonomy->taxonomy_ready ) {
+			$self->custom_taxonomy->register_custom_taxonomy();
+		}
 
 		$log_post = array(
 			'post_type'    => $self->cpt->post_type,
@@ -312,7 +315,7 @@ class WDS_Log_Post {
 				$term = get_term_by( 'slug', $term_lookup, $self->custom_taxonomy->taxonomy );
 
 				if ( false === $term ) {
-					throw new Exception( sprintf( __( 'Could not find term %s for post_type %s' ), $term_slug, $self->cpt->post_type ) );
+					throw new Exception( sprintf( __( 'Could not find term %s for post_type %s' ), $term_lookup, $self->cpt->post_type ) );
 				}
 
 				$terms[] = $term->term_id;

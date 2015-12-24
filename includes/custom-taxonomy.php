@@ -15,6 +15,7 @@ class WDSLP_Custom_Taxonomy {
 	protected $plugin = null;
 
 	public $taxonomy = 'wds_log_type';
+	public $taxonomy_ready = false;
 
 	/**
 	 * Constructor
@@ -79,5 +80,7 @@ class WDSLP_Custom_Taxonomy {
 				$new_term = wp_insert_term( $term_label, $this->taxonomy, $term_args );
 			}
 		}
+
+		$this->taxonomy_ready = true;
 	}
 }
