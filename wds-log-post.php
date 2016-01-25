@@ -166,7 +166,7 @@ class WDS_Log_Post {
 
 	public function register_enqueue_scripts_styles() {
 		$min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
-		wp_register_style( $this->key . '_admin_css', self::url( "/assets/css/wds-log-post{$min}.css " ), $this->version );
+		wp_register_style( $this->key . '_admin_css', self::url( "assets/css/wds-log-post{$min}.css " ), $this->version );
 	}
 
 	public function maybe_enqueue_scripts_styles() {
