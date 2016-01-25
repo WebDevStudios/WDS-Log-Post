@@ -272,7 +272,7 @@ HTML;
 	}
 
 	protected function edit_screen_check() {
-		if ( ! is_admin() ) {
+		if ( ! is_admin() || ! function_exists( 'get_current_screen' ) ) {
 			return;
 		}
 
