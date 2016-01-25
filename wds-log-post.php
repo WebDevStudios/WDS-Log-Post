@@ -331,7 +331,7 @@ class WDS_Log_Post {
 	protected static function get_lowest_user_id() {
 		global $wpdb;
 
-		return absint( $wpdb->get_var( 'SELECT `ID` FROM `wp_users` ORDER BY `ID` ASC LIMIT 0,1;' ) );
+		return absint( $wpdb->get_var( 'SELECT `ID` FROM `' . $wpdb->prefix . 'users` ORDER BY `ID` ASC LIMIT 0,1;' ) );
 	}
 }
 
