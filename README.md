@@ -1,12 +1,12 @@
 # WDS Log Post #
-**Contributors:**      WebDevStudios  
-**Donate link:**       http://webdevstudios.com  
-**Tags:**			   logging  
-**Requires at least:** 4.3  
-**Tested up to:**      4.3  
-**Stable tag:**        0.1.0  
-**License:**           GPLv2  
-**License URI:**       http://www.gnu.org/licenses/gpl-2.0.html  
+**Contributors:**      WebDevStudios
+**Donate link:**       http://webdevstudios.com
+**Tags:**			   logging
+**Requires at least:** 4.3
+**Tested up to:**      4.3
+**Stable tag:**        0.1.2
+**License:**           GPLv2
+**License URI:**       http://www.gnu.org/licenses/gpl-2.0.html
 
 ## Description ##
  
@@ -89,6 +89,10 @@ add_filter( 'wds_log_post_log_types', function ( $terms ) {
 ```
 
 ## Changelog ##
+
+### 0.1.2 ###
+* Fix a bug with calling `wp_users` instead of `$wpdb->users`
+* Fix a fatal error when `get_current_screen()` hasn't been defined.
 
 ### 0.1.0 ###
 * First release
