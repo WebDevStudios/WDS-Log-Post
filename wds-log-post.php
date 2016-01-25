@@ -3,7 +3,7 @@
  * Plugin Name: WDS Log Post
  * Plugin URI:  http://webdevstudios.com
  * Description: A Log custom post type for logging all the things!
- * Version:     0.1.1
+ * Version:     0.1.2
  * Author:      WebDevStudios
  * Author URI:  http://webdevstudios.com
  * Donate link: http://webdevstudios.com
@@ -74,7 +74,7 @@ class WDS_Log_Post {
 	 * @var  string
 	 * @since  0.1.0
 	 */
-	const VERSION = '0.1.0';
+	const VERSION = '0.1.2';
 
 	/**
 	 * URL of plugin directory
@@ -145,8 +145,6 @@ class WDS_Log_Post {
 	public function plugin_classes() {
 		// Attach other plugin classes to the base plugin class.
 		// $this->admin = new WDSLP_Admin( $this );
-		global $current_user;
-
 		$this->cpt             = new WDSLP_Wds_Log( $this );
 		$this->custom_taxonomy = new WDSLP_Custom_Taxonomy( $this );
 	}
