@@ -222,7 +222,7 @@ HTML;
 
 		if ( count( $terms ) ) {
 			foreach ( $terms as $term ) {
-				$term_html .= sprintf( '<span class="wds-log-tag %s" style="%s">%s</span>', $tern->slug, $term->description, $term->name );
+				$term_html .= sprintf( '<span class="wds-log-tag %s" style="%s">%s</span>', $term->slug, $term->description, $term->name );
 			}
 		}
 
