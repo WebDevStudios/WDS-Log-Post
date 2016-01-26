@@ -211,6 +211,9 @@ class WDS_Log_Post {
 			$response['wdslp_progress'] = get_post_meta( $post_id, '_wds_log_progress', 1 );
 		}
 
+		// Update post content.
+		$response['wdslp_content'] = $post->post_content;
+
 		return $response;
 	}
 

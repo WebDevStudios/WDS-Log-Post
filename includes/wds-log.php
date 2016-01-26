@@ -183,7 +183,7 @@ jQuery( document ).ready( function( $ ) {
 	$('textarea.wp-editor-area').replaceWith( function() {
 		var height = parseFloat( 0.6 * $(window).outerHeight(), 10 );
 		var ret_html = '<pre class="wp-editor-area"><?php echo $tax_info; ?> <hr/>';
-		ret_html += '<textarea style="width:100%;min-height:'+ height +'px" readonly="readonly">';
+		ret_html += '<textarea id="wds-log-content" style="width:100%;min-height:'+ height +'px" readonly="readonly">';
 		ret_html += $(this).val() + '</textarea></pre><?php echo $progress_html; ?>';
 		return ret_html;
 	});
@@ -200,6 +200,10 @@ jQuery( document ).ready( function( $ ) {
 					$('#wds-log-progress-holder .spinner').remove();
 					$('#wds-log-progress-label').text( 'Process complete!' ).addClass('dashicons-before dashicons-yes');
 				}
+			}
+
+			if ( data.wdslp_content ) {
+				$('#wds-log-content' ).val( data.wdslp_content );
 			}
 		});
 	<?php else: ?>
