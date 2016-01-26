@@ -194,18 +194,23 @@ class WDS_Log_Post {
 	}
 
 	function heartbeat_received( $response, $data ) {
-		if ( isset( $data['wp-refresh-post-lock']['post_id'] ) ) {
-			$post_id = absint( $data['wp-refresh-post-lock']['post_id'] );
-			$post = get_post( $post_id );
-			if ( ! empty( $post ) && $this->cpt->post_type === $post->post_type ) {
-				$progress = get_post_meta( $post_id, '_wds_log_progress', 1 );
-				if ( ! empty( $progress ) ) {
-					$response['wdslp_progress'] = get_post_meta( $post_id, '_wds_log_progress', 1 );
-				}
-			}
+		if ( ! isset( $data['wp-refresh-post-lock']['post_id'] ) ) {
+			return $response;
 		}
 
-		error_log( '$response: '. print_r( $response, true ) );
+		$post_id = absint( $data['wp-refresh-post-lock']['post_id'] );
+		$post = get_post( $post_id );
+
+		if ( empty( $post ) || $this->cpt->post_type !== $post->post_type ) {
+			return $response;
+		}
+
+		$progress = get_post_meta( $post_id, '_wds_log_progress', 1 );
+
+		if ( ! empty( $progress ) ) {
+			$response['wdslp_progress'] = get_post_meta( $post_id, '_wds_log_progress', 1 );
+		}
+
 		return $response;
 	}
 
