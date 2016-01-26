@@ -153,10 +153,10 @@ HTML;
 
 		$progress_js = $progress_html = '';
 
-		if ( '' !== get_post_meta( $post->ID, '_wds_log_progress', true ) ) {
-			$progress_value = get_post_meta( $post->ID, '_wds_log_progress', true );
+		$progress_value = get_post_meta( $post->ID, '_wds_log_progress', true );
+		if ( '' !== $progress_value ) {
 			$progress_js = '$("#wds_log_progress").progressbar({value: ' . $progress_value . '});';
-			$progress_html = implode( '', array( 
+			$progress_html = implode( '', array(
 				'<div id="wds-log-progress-holder">',
 					'<strong style="float:left; margin: 5px">Current Task Progress:</strong>',
 					'<div style="float: right" class="media-progress-bar" id="wds_log_progress"></div>',
@@ -183,7 +183,7 @@ jQuery( document ).ready( function( $ ) {
 	$('textarea.wp-editor-area').replaceWith( function() {
 		var height = parseFloat( 0.6 * $(window).outerHeight(), 10 );
 		var ret_html = '<pre class="wp-editor-area">{$tax_info} <hr/>';
-		ret_html += '<textarea style="width:100%;min-height:'+ height +'px" readonly="readonly">'; 
+		ret_html += '<textarea style="width:100%;min-height:'+ height +'px" readonly="readonly">';
 		ret_html += $(this).val() + '</textarea></pre>{$progress_html}';
 		return ret_html;
 	});
