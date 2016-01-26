@@ -3,7 +3,7 @@
  * Plugin Name: WDS Log Post
  * Plugin URI:  http://webdevstudios.com
  * Description: A Log custom post type for logging all the things!
- * Version:     0.2.0
+ * Version:     0.2.1
  * Author:      WebDevStudios
  * Author URI:  http://webdevstudios.com
  * Donate link: http://webdevstudios.com
@@ -109,6 +109,17 @@ class WDS_Log_Post {
 	protected static $single_instance = null;
 
 	protected $key = 'wds_log_post';
+
+	/**
+	 * Configurable settings.
+	 *
+	 * @var array
+	 * @since 0.2.1
+	 */
+	protected static $config = array(
+		'show_timestamps' => false,
+		'append_logs'     => true,
+	);
 
 	/**
 	 * Separator for updating log files.
@@ -309,7 +320,7 @@ class WDS_Log_Post {
 		if ( ! $self->custom_taxonomy->taxonomy_ready ) {
 			$self->custom_taxonomy->register_custom_taxonomy();
 		}
-		
+
 		$log_post_arr = array(
 			'post_title'   => $title,
 			'post_status'  => 'publish',
@@ -317,9 +328,23 @@ class WDS_Log_Post {
 
 		if ( null !== $log_post_id ) {
 			$log_post = get_post( $log_post_id );
-			$log_post_arr['ID']           = $log_post_id;
-			$log_post_arr['post_title']   = ( $completed ? '[Complete] ' : '[In Progress] ' ) . $log_post_arr['post_title'];
-			$log_post_arr['post_content'] = $log_post->post_content . self::SEPARATOR . $log_post_arr['post_title'] . self::TITLESEPARATOR . $full_message;
+			$log_post_arr['ID'] = $log_post_id;
+
+			// Setup the title.
+			$log_post_arr['post_title'] = ( $completed ? '[Complete] ' : '[In Progress] ' ) . $log_post_arr['post_title'];
+
+			if ( self::get_option( 'show_timestamps' ) ) {
+				$title_time = date( 'Y-m-d H:i:s' );
+				$log_post_arr['post_title'] = "[{$title_time}] {$log_post_arr['post_title']}";
+			}
+
+			// Setup post content.
+			$log_post_arr['post_content'] = $full_message;
+
+			if ( self::get_option( 'append_logs' ) ) {
+				$log_post_arr['post_content'] = $log_post->post_content . self::SEPARATOR . $log_post_arr['post_title'] . self::TITLESEPARATOR . $log_post_arr['post_content'];
+			}
+
 			$log_post_id = wp_update_post( $log_post_arr );
 		} else {
 			$log_post_arr['post_type']    = $self->cpt->post_type;
@@ -356,6 +381,16 @@ class WDS_Log_Post {
 		global $wpdb;
 
 		return absint( $wpdb->get_var( "SELECT `ID` FROM {$wpdb->users} ORDER BY `ID` ASC LIMIT 0,1;" ) );
+	}
+
+	public static function set_option( $option, $value = false ) {
+		if ( in_array( $option, self::$config ) ) {
+			self::$config[ $option ] = $value;
+		}
+	}
+
+	public static function get_option( $option ) {
+		return in_array( $option, self::$config ) ? self::$config[ $option ] : null;
 	}
 }
 
