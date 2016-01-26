@@ -333,16 +333,17 @@ class WDS_Log_Post {
 			// Setup the title.
 			$log_post_arr['post_title'] = ( $completed ? '[Complete] ' : '[In Progress] ' ) . $log_post_arr['post_title'];
 
-			if ( self::get_option( 'show_timestamps' ) ) {
-				$title_time = date( 'Y-m-d H:i:s' );
-				$log_post_arr['post_title'] = "[{$title_time}] {$log_post_arr['post_title']}";
-			}
-
 			// Setup post content.
 			$log_post_arr['post_content'] = $full_message;
 
 			if ( self::get_option( 'append_logs' ) ) {
-				$log_post_arr['post_content'] = $log_post->post_content . self::SEPARATOR . $log_post_arr['post_title'] . self::TITLESEPARATOR . $log_post_arr['post_content'];
+				$title_time = '';
+
+				if ( self::get_option( 'show_timestamps' ) ) {
+					$title_time = '[' . date( 'Y-m-d H:i:s' ) . ']';
+				}
+
+				$log_post_arr['post_content'] = $log_post->post_content . self::SEPARATOR . $title_time . $log_post_arr['post_title'] . self::TITLESEPARATOR . $log_post_arr['post_content'];
 			}
 
 			$log_post_id = wp_update_post( $log_post_arr );
