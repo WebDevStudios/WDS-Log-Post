@@ -46,6 +46,7 @@ class WDSLP_Wds_Log extends CPT_Core {
 				'show_in_admin_bar' => false,
 				'public'            => false,
 				'hierarchical'      => false,
+				'menu_position'     => 100,
 			)
 		);
 	}
