@@ -62,9 +62,13 @@ class WDSLP_Custom_Taxonomy {
 				'slug'        => 'general',
 				'description' => 'background-color:#00ee00;',
 			),
-			'Error'   => array(
+			'Error' => array(
 				'slug'        => 'error',
 				'description' => 'background-color:#ff0000;',
+			),
+			'Debug' => array(
+				'slug'        => 'debug',
+				'description' => '',
 			),
 		);
 
