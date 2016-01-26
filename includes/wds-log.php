@@ -151,22 +151,22 @@ HTML;
 		$remove_elements = implode(',', $remove_elements);
 		$tax_info = $this->get_term_tag_html( $post->ID );
 
-		$progress_js = $progress_html = '';
+		$progress_html = '';
 
 		if ( '' !== get_post_meta( $post->ID, '_wds_log_progress', true ) ) {
-			$progress_value = get_post_meta( $post->ID, '_wds_log_progress', true );
-			$progress_js = '$("#wds_log_progress").progressbar({value: ' . $progress_value . '});';
+			$progress_value = absint( get_post_meta( $post->ID, '_wds_log_progress', true ) );
 			$progress_html = implode( '', array(
 				'<div id="wds-log-progress-holder">',
-					'<strong style="float:left; margin: 5px">Current Task Progress:</strong>',
+					'<div class="spinner" style="visibility:visible; float: left;"></div>',
+					'<strong style="float:left; margin: 5px" id="wds-log-progress-label">Current Task Progress:</strong>',
 					'<div style="float: right" class="media-progress-bar" id="wds_log_progress" title="' . sprintf( __( '%s%% Complete', 'wds-log-post' ), $progress_value ) . '"></div>',
 				'</div>',
 			));
 		}
 
-		echo <<<HTML
+		?>
 <style>
-{$remove_elements} {
+<?php echo $remove_elements; ?> {
 	display: none;
 	visibility: hidden;
 }
@@ -182,19 +182,34 @@ jQuery( document ).ready( function( $ ) {
 
 	$('textarea.wp-editor-area').replaceWith( function() {
 		var height = parseFloat( 0.6 * $(window).outerHeight(), 10 );
-		var ret_html = '<pre class="wp-editor-area">{$tax_info} <hr/>';
+		var ret_html = '<pre class="wp-editor-area"><?php echo $tax_info; ?> <hr/>';
 		ret_html += '<textarea style="width:100%;min-height:'+ height +'px" readonly="readonly">';
-		ret_html += $(this).val() + '</textarea></pre>{$progress_html}';
+		ret_html += $(this).val() + '</textarea></pre><?php echo $progress_html; ?>';
 		return ret_html;
 	});
 
-	// Really remove everything
-	$('{$remove_elements}').remove();
+	<?php if ( $progress_value ) : error_log( '$progress_value: '. print_r( $progress_value, true ) );?>
+		var jQprogress = $( '#wds_log_progress' );
+		jQprogress.progressbar({value: parseInt( <?php echo $progress_value; ?>, 10 ) });
 
-	{$progress_js}
+		$(document).on( 'heartbeat-tick', function(e, data) {
+			if ( data.wdslp_progress && data.wdslp_progress <= 100 ) {
+				jQprogress.progressbar({value: parseInt( data.wdslp_progress, 10 ) });
+
+				if( data.wdslp_progress >= 100 ) {
+					$('#wds-log-progress-holder .spinner').remove();
+					$('#wds-log-progress-label').text( 'Process complete!' ).addClass('dashicons-before dashicons-yes');
+				}
+			}
+		});
+	<?php else: ?>
+		$('#wds-log-progress-holder').remove();
+	<?php endif; ?>
+	// Really remove everything
+	$('<?php echo $remove_elements; ?>').remove();
 });
 </script>
-HTML;
+<?php
 	}
 
 	/**
