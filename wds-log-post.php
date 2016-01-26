@@ -291,12 +291,12 @@ class WDS_Log_Post {
 	 * @param string $message               The message for the error. Should be concise, as it will be the log entry title.
 	 * @param string $full_message[='']     A longer message, if desired. This can include more detail.
 	 * @param mixed  $term_slug[='general'] A string or array of log types to assign to this entry.
-	 * @param int    $log_post_id[=false]   An option ID of the log message to update.
+	 * @param int    $log_post_id[=null]    An option ID of the log message to update.
 	 * @param bool   $completed[=false]     If updating, specifcy whether this update is the last one.
 	 *
 	 * @return int|WP_Error
 	 */
-	public static function log_message( $title, $full_message = '', $term_slug = 'general', $log_post_id = false, $completed = false ) {
+	public static function log_message( $title, $full_message = '', $term_slug = 'general', $log_post_id = null, $completed = false ) {
 		$self = self::get_instance();
 		if ( ! $self->custom_taxonomy->taxonomy_ready ) {
 			$self->custom_taxonomy->register_custom_taxonomy();
@@ -304,21 +304,21 @@ class WDS_Log_Post {
 		
 		$log_post_arr = array(
 			'post_title'   => $title,
+			'post_status'  => 'publish',
 		);
 
-		if ( false !== $log_post_id ) {
+		if ( null !== $log_post_id ) {
 			$log_post = get_post( $log_post_id );
 			$log_post_arr['ID']           = $log_post_id;
 			$log_post_arr['post_content'] = $log_post->post_content . self::SEPARATOR . $full_message;
 			$log_post_arr['post_title']   = ( $completed ? '[Complete]' : '[In Progress]' ) . $log_post_arr['post_title'];
+			$log_post_id = wp_update_post( $log_post_arr );
 		} else {
 			$log_post_arr['post_type']    = $self->cpt->post_type;
 			$log_post_arr['post_content'] = $full_message;
 			$log_post_arr['post_author']  = self::get_lowest_user_id();
-			$log_post_arr['post_status']  = 'publish';
+			$log_post_id = wp_insert_post( $log_post_arr );
 		}
-
-		$log_post_id = wp_insert_post( $log_post_arr );
 
 		if ( ! is_wp_error( $log_post_id ) ) {
 			if ( ! is_array( $term_slug ) ) {
