@@ -167,7 +167,8 @@ jQuery( document ).ready( function( $ ) {
 	});
 
 	$('textarea.wp-editor-area').replaceWith( function() {
-		return '<pre class="wp-editor-area">{$tax_info} <hr/>' + $(this).val() + '</pre>';
+		var height = parseFloat( 0.6 * $(window).outerHeight(), 10 );
+		return '<pre class="wp-editor-area">{$tax_info} <hr/><textarea style="width:100%;min-height:'+ height +'px" readonly="readonly">' + $(this).val() + '</textarea></pre>';
 	} );
 
 	// Really remove everything
