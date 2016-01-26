@@ -3,7 +3,7 @@
  * Plugin Name: WDS Log Post
  * Plugin URI:  http://webdevstudios.com
  * Description: A Log custom post type for logging all the things!
- * Version:     0.2.1
+ * Version:     0.2.2
  * Author:      WebDevStudios
  * Author URI:  http://webdevstudios.com
  * Donate link: http://webdevstudios.com
@@ -194,6 +194,9 @@ class WDS_Log_Post {
 	public function register_enqueue_scripts_styles() {
 		$min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 		wp_register_style( $this->key . '_admin_css', self::url( "assets/css/wds-log-post{$min}.css" ), $this->version );
+
+		// Enqueue progress bar.
+		wp_enqueue_script( 'jquery-ui-progressbar' );
 	}
 
 	public function maybe_enqueue_scripts_styles() {
@@ -392,6 +395,17 @@ class WDS_Log_Post {
 
 	public static function get_option( $option ) {
 		return in_array( $option, self::$config ) ? self::$config[ $option ] : null;
+	}
+
+	/**
+	 * Add progress bar updates under the log message.
+	 *
+	 * @param int $log_post_id The ID of the Log Post to apply progress to.
+	 * @param int $progress    The amount of progress (between 0-100).
+	 */
+	public static function log_progress( $log_post_id, $progress ) {
+		$progress = abs( $progress );
+		return update_post_meta( $log_post_id, '_wds_log_progress', $progress );
 	}
 }
 
