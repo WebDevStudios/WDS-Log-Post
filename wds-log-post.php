@@ -189,6 +189,24 @@ class WDS_Log_Post {
 
 		add_action( 'admin_enqueue_scripts', array( $this, 'register_enqueue_scripts_styles' ) );
 		add_action( 'admin_head', array( $this, 'maybe_enqueue_scripts_styles' ) );
+
+		add_filter( 'heartbeat_received', array( $this, 'heartbeat_received' ), 10, 2 );
+	}
+
+	function heartbeat_received( $response, $data ) {
+		if ( isset( $data['wp-refresh-post-lock']['post_id'] ) ) {
+			$post_id = absint( $data['wp-refresh-post-lock']['post_id'] );
+			$post = get_post( $post_id );
+			if ( ! empty( $post ) && $this->cpt->post_type === $post->post_type ) {
+				$progress = get_post_meta( $post_id, '_wds_log_progress', 1 );
+				if ( ! empty( $progress ) ) {
+					$response['wdslp_progress'] = get_post_meta( $post_id, '_wds_log_progress', 1 );
+				}
+			}
+		}
+
+		error_log( '$response: '. print_r( $response, true ) );
+		return $response;
 	}
 
 	public function register_enqueue_scripts_styles() {
@@ -197,6 +215,7 @@ class WDS_Log_Post {
 
 		// Enqueue progress bar.
 		wp_enqueue_script( 'jquery-ui-progressbar' );
+		wp_enqueue_script( 'heartbeat' );
 	}
 
 	public function maybe_enqueue_scripts_styles() {

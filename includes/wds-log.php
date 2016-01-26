@@ -164,9 +164,9 @@ HTML;
 			));
 		}
 
-		echo <<<HTML
+		?>
 <style>
-{$remove_elements} {
+<?php echo $remove_elements; ?> {
 	display: none;
 	visibility: hidden;
 }
@@ -182,19 +182,27 @@ jQuery( document ).ready( function( $ ) {
 
 	$('textarea.wp-editor-area').replaceWith( function() {
 		var height = parseFloat( 0.6 * $(window).outerHeight(), 10 );
-		var ret_html = '<pre class="wp-editor-area">{$tax_info} <hr/>';
+		var ret_html = '<pre class="wp-editor-area"><?php echo $tax_info; ?> <hr/>';
 		ret_html += '<textarea style="width:100%;min-height:'+ height +'px" readonly="readonly">';
-		ret_html += $(this).val() + '</textarea></pre>{$progress_html}';
+		ret_html += $(this).val() + '</textarea></pre><?php echo $progress_html; ?>';
 		return ret_html;
 	});
 
-	// Really remove everything
-	$('{$remove_elements}').remove();
+	<?php if ( $progress_value ) : error_log( '$progress_value: '. print_r( $progress_value, true ) );?>
+		var jQprogress = $( '#wds_log_progress' );
+		jQprogress.progressbar({value: '<?php echo $progress_value; ?>'});
 
-	{$progress_js}
+		$(document).on( 'heartbeat-tick', function(e, data) {
+			if ( data.wdslp_progress && data.wdslp_progress <= 100 ) {
+				jQprogress.progressbar({value: data.wdslp_progress});
+			}
+		});
+	<?php endif; ?>
+	// Really remove everything
+	$('<?php echo $remove_elements; ?>').remove();
 });
 </script>
-HTML;
+<?php
 	}
 
 	/**
