@@ -119,6 +119,14 @@ class WDS_Log_Post {
 	const SEPARATOR = "\n------------------------------------------------\n";
 
 	/**
+	 * Separator for updating log files.
+	 *
+	 * @var string
+	 * @sicne 0.2.0
+	 */
+	const TITLESEPARATOR = "\n---------\n";
+
+	/**
 	 * Creates or returns an instance of this class.
 	 *
 	 * @since  0.1.0
@@ -310,8 +318,8 @@ class WDS_Log_Post {
 		if ( null !== $log_post_id ) {
 			$log_post = get_post( $log_post_id );
 			$log_post_arr['ID']           = $log_post_id;
-			$log_post_arr['post_content'] = $log_post->post_content . self::SEPARATOR . $full_message;
-			$log_post_arr['post_title']   = ( $completed ? '[Complete]' : '[In Progress]' ) . $log_post_arr['post_title'];
+			$log_post_arr['post_title']   = ( $completed ? '[Complete] ' : '[In Progress] ' ) . $log_post_arr['post_title'];
+			$log_post_arr['post_content'] = $log_post->post_content . self::SEPARATOR . $log_post_arr['post_title'] . self::TITLESEPARATOR . $full_message;
 			$log_post_id = wp_update_post( $log_post_arr );
 		} else {
 			$log_post_arr['post_type']    = $self->cpt->post_type;
