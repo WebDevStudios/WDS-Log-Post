@@ -318,6 +318,55 @@ class WDS_Log_Post {
 	 *
 	 * @return int|WP_Error
 	 */
+	public static function update_message( $log_post_id, $full_message = '', $title = '' ) {
+		$log_post = get_post( $log_post_id );
+
+		// If no post object or no update values, bail
+		if ( empty( $log_post ) || ! ( strlen( $title ) || strlen( $full_message ) ) ) {
+			return false;
+		}
+
+		$log_post_arr = array(
+			'post_status'  => 'publish',
+			'ID' => $log_post_id,
+		);
+
+		if ( strlen( $title ) ) {
+			$log_post_arr['post_title'] = $title;
+		}
+
+		if ( strlen( $full_message ) ) {
+			$log_post_arr['post_content'] = $full_message;
+		}
+
+		if ( self::get_option( 'append_logs' ) ) {
+			$title_time = '';
+
+			if ( self::get_option( 'show_timestamps' ) ) {
+				$title_time = '[' . date( 'Y-m-d H:i:s' ) . ']';
+			}
+
+			if ( strlen( $title ) ) {
+				$title = $title_time . $log_post_arr['post_title'] . self::TITLESEPARATOR;
+			}
+
+			$log_post_arr['post_content'] = $log_post->post_content . self::SEPARATOR . $title . $log_post_arr['post_content'];
+		}
+
+		return wp_update_post( $log_post_arr );
+	}
+
+	/**
+	 * Creates a new log entry
+	 *
+	 * @param string $message               The message for the error. Should be concise, as it will be the log entry title.
+	 * @param string $full_message[='']     A longer message, if desired. This can include more detail.
+	 * @param mixed  $term_slug[='general'] A string or array of log types to assign to this entry.
+	 * @param int    $log_post_id[=null]    An option ID of the log message to update.
+	 * @param bool   $completed[=false]     If updating, specifcy whether this update is the last one.
+	 *
+	 * @return int|WP_Error
+	 */
 	public static function log_message( $title, $full_message = '', $term_slug = 'general', $log_post_id = null, $completed = false ) {
 		$self = self::get_instance();
 		if ( ! $self->custom_taxonomy->taxonomy_ready ) {
