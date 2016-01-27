@@ -160,7 +160,7 @@ HTML;
 				'<div id="wds-log-progress-holder">',
 					'<div class="spinner" style="visibility:visible; float: left;"></div>',
 					'<strong style="float:left; margin: 5px" id="wds-log-progress-label">Current Task Progress:</strong>',
-					'<div style="float: right" class="media-progress-bar" id="wds_log_progress" title="' . sprintf( __( '%s%% Complete', 'wds-log-post' ), $progress_value ) . '"></div>',
+					'<div style="float: right" class="media-progress-bar" id="wds_log_progress" title="' . sprintf( __( '%d%% Complete', 'wds-log-post' ), $progress_value ) . '"></div>',
 				'</div>',
 			));
 		}
@@ -191,15 +191,26 @@ jQuery( document ).ready( function( $ ) {
 
 	<?php if ( $progress_value ) : error_log( '$progress_value: '. print_r( $progress_value, true ) );?>
 		var jQprogress = $( '#wds_log_progress' );
-		jQprogress.progressbar({value: parseInt( <?php echo $progress_value; ?>, 10 ) });
+		var percent = parseInt( <?php echo $progress_value; ?>, 10 );
+		var complete = function() {
+			$('#wds-log-progress-holder .spinner').remove();
+			$('#wds-log-progress-label').text( 'Process complete!' ).addClass('dashicons-before dashicons-yes');
+		}
+
+		jQprogress.progressbar({value: percent });
+
+		if ( percent >= 100 ) {
+			complete();
+		}
 
 		$(document).on( 'heartbeat-tick', function(e, data) {
 			if ( data.wdslp_progress && data.wdslp_progress <= 100 ) {
-				jQprogress.progressbar({value: parseInt( data.wdslp_progress, 10 ) });
+				var percent = parseInt( data.wdslp_progress, 10 );
 
-				if( data.wdslp_progress >= 100 ) {
-					$('#wds-log-progress-holder .spinner').remove();
-					$('#wds-log-progress-label').text( 'Process complete!' ).addClass('dashicons-before dashicons-yes');
+				jQprogress.progressbar({value: percent }).attr( 'title', percent + '<?php _e( '% Complete', 'wds-log-post' ); ?>' );
+
+				if ( data.wdslp_progress >= 100 ) {
+					complete();
 				}
 			}
 
