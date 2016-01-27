@@ -170,8 +170,14 @@ class WDS_Log_Post {
 	 * @return  null
 	 */
 	public function plugin_classes() {
-		// Attach other plugin classes to the base plugin class.
-		// $this->admin = new WDSLP_Admin( $this );
+		if ( ! class_exists( 'WDSLP_Wds_Log' ) ) {
+			self::include_file( 'wds-log' );
+		}
+
+		if ( ! class_exists( 'WDSLP_Custom_Taxonomy' ) ) {
+			self::include_files( 'custom-taxonomy' );
+		}
+
 		$this->cpt             = new WDSLP_Wds_Log( $this );
 		$this->custom_taxonomy = new WDSLP_Custom_Taxonomy( $this );
 	}

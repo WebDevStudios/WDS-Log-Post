@@ -152,6 +152,7 @@ HTML;
 		$tax_info = $this->get_term_tag_html( $post->ID );
 
 		$progress_html = '';
+		$progress_value = false;
 
 		if ( '' !== get_post_meta( $post->ID, '_wds_log_progress', true ) ) {
 			$progress_value = absint( get_post_meta( $post->ID, '_wds_log_progress', true ) );
