@@ -189,7 +189,7 @@ jQuery( document ).ready( function( $ ) {
 		return ret_html;
 	});
 
-	<?php if ( $progress_value ) : error_log( '$progress_value: '. print_r( $progress_value, true ) );?>
+	<?php if ( $progress_value ) : ?>
 		var jQprogress = $( '#wds_log_progress' );
 		var percent = parseInt( <?php echo $progress_value; ?>, 10 );
 		var complete = function() {
