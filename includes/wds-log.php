@@ -156,6 +156,7 @@ HTML;
 
 		if ( '' !== get_post_meta( $post->ID, '_wds_log_progress', true ) ) {
 			$progress_value = absint( get_post_meta( $post->ID, '_wds_log_progress', true ) );
+			$aborted = get_post_meta( $post->ID, '_wds_log_progress_aborted', true ) ? 'true' : 'false';
 			$progress_html = implode( '', array(
 				'<div id="wds-log-progress-holder">',
 					'<div class="spinner" style="visibility:visible; float: left;"></div>',
@@ -192,32 +193,39 @@ jQuery( document ).ready( function( $ ) {
 	<?php if ( $progress_value ) : ?>
 		var jQprogress = $( '#wds_log_progress' );
 		var percent = parseInt( <?php echo $progress_value; ?>, 10 );
-		var complete = function() {
+		var aborted = <?php echo $aborted; ?>;
+		var complete = function( aborted ) {
 			$('#wds-log-progress-holder .spinner').remove();
-			$('#wds-log-progress-label').text( 'Process complete!' ).addClass('dashicons-before dashicons-yes');
-		}
+			var dashClass = aborted ? 'dashicons-no' : 'dashicons-yes';
+			var message = aborted ? '<?php _e( 'Process aborted', 'wds-log-post' ); ?>' : '<?php _e( 'Process complete!', 'wds-log-post' ); ?>';
+			$('#wds-log-progress-label').text( message ).addClass('dashicons-before ' + dashClass);
+			$(document).off( 'heartbeat-tick', tick );
+		};
 
-		jQprogress.progressbar({value: percent });
+		var setStatus = function( percent, aborted ) {
+			jQprogress.progressbar({value: percent }).attr( 'title', percent + '<?php _e( '% Complete', 'wds-log-post' ); ?>' );
 
-		if ( percent >= 100 ) {
-			complete();
-		}
+			if ( percent >= 100 ) {
+				complete( aborted ? true : false );
+			} else if ( aborted ) {
+				complete( true );
+			}
+		};
 
-		$(document).on( 'heartbeat-tick', function(e, data) {
+		var tick = function(e, data) {
 			if ( data.wdslp_progress && data.wdslp_progress <= 100 ) {
-				var percent = parseInt( data.wdslp_progress, 10 );
-
-				jQprogress.progressbar({value: percent }).attr( 'title', percent + '<?php _e( '% Complete', 'wds-log-post' ); ?>' );
-
-				if ( data.wdslp_progress >= 100 ) {
-					complete();
-				}
+				setStatus( parseInt( data.wdslp_progress, 10 ), data.wdslp_progress_aborted );
 			}
 
 			if ( data.wdslp_content ) {
 				$('#wds-log-content' ).val( data.wdslp_content );
 			}
-		});
+		};
+
+		$(document).on( 'heartbeat-tick', tick );
+
+		setStatus( percent, aborted );
+
 	<?php else: ?>
 		$('#wds-log-progress-holder').remove();
 	<?php endif; ?>

@@ -215,6 +215,7 @@ class WDS_Log_Post {
 
 		if ( ! empty( $progress ) ) {
 			$response['wdslp_progress'] = get_post_meta( $post_id, '_wds_log_progress', 1 );
+			$response['wdslp_progress_aborted'] = (bool) get_post_meta( $post_id, '_wds_log_progress_aborted', 1 );
 		}
 
 		// Update post content.
@@ -486,8 +487,16 @@ class WDS_Log_Post {
 	 * @param int $progress    The amount of progress (between 0-100).
 	 */
 	public static function log_progress( $log_post_id, $progress ) {
-		$progress = abs( $progress );
-		return update_post_meta( $log_post_id, '_wds_log_progress', $progress );
+		return update_post_meta( $log_post_id, '_wds_log_progress', abs( $progress ) );
+	}
+
+	/**
+	 * Abort progress, but leave progress bar status.
+	 *
+	 * @param int $log_post_id The ID of the Log Post to apply progress to.
+	 */
+	public static function abort_progress( $log_post_id ) {
+		update_post_meta( $log_post_id, '_wds_log_progress_aborted', true );
 	}
 }
 
