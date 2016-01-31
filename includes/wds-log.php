@@ -35,6 +35,7 @@ class WDSLP_Wds_Log extends CPT_Core {
 	public function __construct( $plugin ) {
 		$this->plugin = $plugin;
 		$this->hooks();
+		$this->register_scripts();
 
 		// Register this cpt
 		// First parameter should be an array with Singular, Plural, and Registered name
@@ -76,6 +77,12 @@ class WDSLP_Wds_Log extends CPT_Core {
 		// Add custom taxonomy filter
 		add_action( 'restrict_manage_posts', array( $this, 'add_taxonomy_filter' ) );
 		add_action( 'parse_query', array( $this, 'filter_admin_list_taxonomy' ) );
+
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+	}
+
+	protected function register_scripts() {
+		wp_register_script( 'alter-list-view', $this->plugin::url( 'assets/js/main.min.js' ), $this->plugin::VERSION );
 	}
 
 	public function enqueue_scripts() {
@@ -89,6 +96,7 @@ class WDSLP_Wds_Log extends CPT_Core {
 		}
 
 		wp_enqueue_style( 'media-views' );
+		wp_enqueue_script( 'alter-list-view' );
 	}
 
 	function remove_bulk_actions( $actions ) {
