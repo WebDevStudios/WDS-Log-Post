@@ -20,7 +20,7 @@ module.exports = function (grunt) {
                 }
             },
             scripts: {
-                files: ['assets/**/*.js'],
+                files: ['assets/js/src/*.js'],
                 tasks: ['scripts'],
                 options: {
                     spawn: false,
@@ -89,7 +89,7 @@ module.exports = function (grunt) {
         },
         uglify: {
             dist: {
-                files: { 'assets/js/main.min.js': 'assets/js/main.js' },
+                files: { 'assets/js/main.min.js': 'assets/js/src/*.js' },
                 options: { banner: compactBannerTemplate }
             }
         }
