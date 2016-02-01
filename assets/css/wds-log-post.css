@@ -7,14 +7,26 @@
  */
 .wds-log-tag {
   padding: 3px 9px;
-  border-radius: 8px; }
+  border-radius: 8px;
+  display: block;
+  float: left;
+  margin: 0 0.5em 1em 0; }
 
 .wp-editor-area {
   margin-top: 0;
   color: #000 !important;
   padding: 10px; }
 
+.wds-log-tag.general {
+  background-color: #00ee00; }
+
+.wds-log-tag.error {
+  background-color: #ff0000; }
+
 .wds-log-tag.debug {
   background-color: #EE8F00; }
+
+#wds-log-content {
+  display: block; }
 
 /*# sourceMappingURL=wds-log-post.css.map */
