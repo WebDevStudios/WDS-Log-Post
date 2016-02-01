@@ -1,9 +1,9 @@
 /**
- * WDS Log Post - v0.1.0 - 2016-01-26
+ * WDS Log Post - v0.1.0 - 2016-02-01
  * http://webdevstudios.com
  *
  * Copyright (c) 2016;
  * Licensed GPLv2+
  */
 
-.wds-log-tag{padding:3px 9px;border-radius:8px}.metabox-holder .postbox-container .empty-container{border:none}.wp-editor-area{margin-top:0;color:#000!important}#wp-content-wrap{padding-top:0}a[href*="post-new.php"][href*=wdslp-wds-log]{display:none;visibility:hidden}.wds-log-tag.debug{background-color:#EE8F00}
+.wds-log-tag{padding:3px 9px;border-radius:8px}.wp-editor-area{margin-top:0;color:#000!important;padding:10px}.wds-log-tag.debug{background-color:#EE8F00}

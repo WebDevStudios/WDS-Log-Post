@@ -11,25 +11,10 @@
     border-radius: 8px;
 }
 
-/**
- * Style tweaks to make things look a little cleaner
- */
-.metabox-holder .postbox-container .empty-container {
-	border: none;
-}
-
 .wp-editor-area {
 	margin-top: 0;
 	color: #000 !important;
-}
-
-#wp-content-wrap {
-	padding-top: 0;
-}
-
-a[href*="post-new.php"][href*="wdslp-wds-log"] {
-	display: none;
-	visibility: hidden;
+	padding: 10px;
 }
 
 .wds-log-tag.debug {

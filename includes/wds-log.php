@@ -41,12 +41,17 @@ class WDSLP_Wds_Log extends CPT_Core {
 		parent::__construct(
 			array( __( 'WDS Log', 'wds-log-post' ), __( 'WDS Logs', 'wds-log-post' ), $this->post_type ),
 			array(
-				'supports'          => array( 'title', 'editor', ),
+				// 'supports'          => array( 'title', 'editor', ),
+				'supports'          => false,
 				'menu_icon'         => 'dashicons-book-alt',
 				'show_in_admin_bar' => false,
 				'public'            => false,
 				'hierarchical'      => false,
 				'menu_position'     => 100,
+				'capabilities' => array(
+					'create_posts'  => is_multisite() ? 'do_not_allow' : false, // Removes support for the "Add New" function (use 'do_not_allow' instead of false for multisite set ups)
+					'delete_posts'  => 'delete_posts',
+				),
 			)
 		);
 	}
@@ -58,68 +63,54 @@ class WDSLP_Wds_Log extends CPT_Core {
 	 * @return  null
 	 */
 	public function hooks() {
-		// Remove "Add New"...
-		add_action( 'admin_menu', array( $this, 'remove_add_menu' ) ); // From sidebar menu
-		add_action( 'admin_head-edit.php', array( $this, 'alter_list_view' ) ); // From list view
-		// Failsafe against actually getting to the Add New page
-		add_action( 'load-post-new.php', array( $this, 'prevent_create_post' ) );
-
-		// Remove meta boxes
-		add_action( 'admin_head-post.php', array( $this, 'remove_edit_controls' ) );
-
 		// Alter edit list row actions
 		add_action( 'post_row_actions', array( $this, 'alter_post_row_actions' ), 10, 2 );
-		add_filter( 'manage_wdslp-wds-log_posts_columns', array( $this, 'add_log_type_column' ) );
-		add_action( 'manage_wdslp-wds-log_posts_custom_column', array( $this, 'alter_post_row_titles' ), 10, 2 );
+		add_filter( "manage_{$this->post_type}_posts_columns", array( $this, 'add_log_type_column' ) );
+		add_action( "manage_{$this->post_type}_posts_custom_column", array( $this, 'alter_post_row_titles' ), 10, 2 );
+		add_filter( "bulk_actions-edit-{$this->post_type}", array( $this, 'remove_bulk_actions' ) );
+		add_action( 'add_meta_boxes', array( $this, 'update_title_global' ) );
+		add_action( 'edit_form_after_title', array( $this, 'output_title_content' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'screen_layout_columns', array( $this, 'adjust_view_for_single_cpt' ), 10, 3 );
 
 		// Add custom taxonomy filter
 		add_action( 'restrict_manage_posts', array( $this, 'add_taxonomy_filter' ) );
 		add_action( 'parse_query', array( $this, 'filter_admin_list_taxonomy' ) );
 	}
 
-	/**
-	 * Remove the submenu for adding a new log post
-	 *
-	 * @since 0.1.0
-	 */
-	public function remove_add_menu() {
-		global $submenu;
-		unset( $submenu[ 'edit.php?post_type=' . $this->post_type ][10] );
-	}
-
-	/**
-	 * Removes the 'Add New' button from the list view screen and also removes
-	 * the "Edit" bulk action
-	 *
-	 * @since 0.1.0
-	 */
-	public function alter_list_view() {
+	public function enqueue_scripts() {
+		if ( ! function_exists( 'get_current_screen' ) ) {
+			return;
+		}
 		$screen = get_current_screen();
 
-		if ( null === $screen || $this->post_type !== $screen->post_type ) {
+		if ( ! isset( $screen->id ) || $this->post_type !== $screen->id ) {
 			return;
 		}
 
-		echo <<<HTML
-<script>
-jQuery(document).ready(function($){
-	$('#bulk-action-selector-top').find('option[value="edit"]').remove();
-});
-</script>
-HTML;
+		wp_enqueue_style( 'media-views' );
 	}
 
-	/**
-	 * No one should ever be able to create a new Log Post through the UI
-	 *
-	 * @since 0.1.0
-	 */
-	public function prevent_create_post() {
-		$screen = get_current_screen();
+	function remove_bulk_actions( $actions ) {
+		unset( $actions['edit'] );
+		return $actions;
+	}
 
-		if ( 'add' === $screen->action && 'post' === $screen->base && $this->post_type === $screen->post_type ) {
-			wp_die( __( 'This post type is read-only' ) );
+	function adjust_view_for_single_cpt( $columns, $screen_id, $screen ) {
+		if ( $this->post_type !== $screen_id ) {
+			return $columns;
 		}
+
+		$columns = array(
+			'max' => 1,
+			'default' => 1,
+		);
+		$screen->add_option( 'layout_columns', $columns );
+
+		remove_meta_box( 'submitdiv', $screen, 'side' );
+		remove_meta_box( 'slugdiv', $this->post_type, 'normal' );
+
+		return $columns;
 	}
 
 	/**
@@ -127,68 +118,10 @@ HTML;
 	 *
 	 * @since 0.1.1
 	 */
-	public function remove_edit_controls() {
-		global $post;
-		$screen = get_current_screen();
-
-		if ( null === $screen || $this->post_type !== $screen->post_type ) {
-			return;
-		}
-
-		global $wp_meta_boxes;
-		$wp_meta_boxes[ $this->post_type ] = array();
-
-		$remove_elements = array(
-			'#screen-options-link-wrap',
-			'#edit-slug-box',
-			'#ed_toolbar',
-			'#wp-content-editor-tools',
-			'#wp-word-count',
-			'a.page-title-action',
-			'#wpbody-content .wrap h1',
-		);
-
-		$remove_elements = implode(',', $remove_elements);
-		$tax_info = $this->get_term_tag_html( $post->ID );
-
-		$progress_html = '';
-		$progress_value = false;
-
-		if ( '' !== get_post_meta( $post->ID, '_wds_log_progress', true ) ) {
-			$progress_value = absint( get_post_meta( $post->ID, '_wds_log_progress', true ) );
-			$aborted = get_post_meta( $post->ID, '_wds_log_progress_aborted', true ) ? 'true' : 'false';
-			$progress_html = implode( '', array(
-				'<div id="wds-log-progress-holder">',
-					'<div class="spinner" style="visibility:visible; float: left;"></div>',
-					'<strong style="float:left; margin: 5px" id="wds-log-progress-label">Current Task Progress:</strong>',
-					'<div style="float: right" class="media-progress-bar" id="wds_log_progress" title="' . sprintf( __( '%d%% Complete', 'wds-log-post' ), $progress_value ) . '"></div>',
-				'</div>',
-			));
-		}
-
+	public function progress_js( $progress_value, $aborted) {
 		?>
-<style>
-<?php echo $remove_elements; ?> {
-	display: none;
-	visibility: hidden;
-}
-</style>
 <script>
 jQuery( document ).ready( function( $ ) {
-	/**
-	 * Replace the title and post content with readonly fields
-	 */
-	$('input[name="post_title"]').replaceWith( function() {
-		return '<h2>' + this.value + '</h2>';
-	});
-
-	$('textarea.wp-editor-area').replaceWith( function() {
-		var height = parseFloat( 0.6 * $(window).outerHeight(), 10 );
-		var ret_html = '<pre class="wp-editor-area"><?php echo $tax_info; ?> <hr/>';
-		ret_html += '<textarea id="wds-log-content" style="width:100%;min-height:'+ height +'px" readonly="readonly">';
-		ret_html += $(this).val() + '</textarea></pre><?php echo $progress_html; ?>';
-		return ret_html;
-	});
 
 	<?php if ( $progress_value ) : ?>
 		var jQprogress = $( '#wds_log_progress' );
@@ -229,8 +162,6 @@ jQuery( document ).ready( function( $ ) {
 	<?php else: ?>
 		$('#wds-log-progress-holder').remove();
 	<?php endif; ?>
-	// Really remove everything
-	$('<?php echo $remove_elements; ?>').remove();
 });
 </script>
 <?php
@@ -275,8 +206,44 @@ jQuery( document ).ready( function( $ ) {
 		}
 	}
 
+	public function update_title_global() {
+		// Replaces the h1 title, which is normally $post_type_object->labels->edit_item
+		$GLOBALS['title'] = the_title( '<h2>', '</h2>', false );
+	}
+
+	public function output_title_content( $post ) {
+		if ( ! isset( $post->post_type ) || $this->post_type !== $post->post_type ) {
+			return;
+		}
+
+		echo '<pre class="wp-editor-area wp-editor-container">'. $this->get_term_tag_html( $post->ID ) . '<hr/>';
+		echo '<textarea id="wds-log-content" style="width:100%;min-height:500px" readonly="readonly">';
+		print_r( $post->post_content );
+		echo '</textarea></pre>';
+
+		$progress_html = '';
+		$progress_value = false;
+
+		if ( '' !== get_post_meta( $post->ID, '_wds_log_progress', true ) ) {
+			$progress_value = absint( get_post_meta( $post->ID, '_wds_log_progress', true ) );
+			$aborted = get_post_meta( $post->ID, '_wds_log_progress_aborted', true ) ? 'true' : 'false';
+			$progress_html = implode( '', array(
+				'<div id="wds-log-progress-holder">',
+					'<div class="spinner" style="visibility:visible; float: left;"></div>',
+					'<strong style="float:left; margin: 5px" id="wds-log-progress-label">Current Task Progress:</strong>',
+					'<div style="float: right" class="media-progress-bar" id="wds_log_progress" title="' . sprintf( __( '%d%% Complete', 'wds-log-post' ), $progress_value ) . '"></div>',
+				'</div>',
+			));
+		}
+
+		echo $progress_html;
+
+		// use sep. JS file, and move all the other JS there
+		$this->progress_js( $progress_value, $aborted );
+	}
+
 	protected function get_term_tag_html( $post_id ) {
-		$terms = wp_get_object_terms( $post_id, $this->plugin->custom_taxonomy->taxonomy );
+		$terms = get_the_terms( $post_id, $this->plugin->custom_taxonomy->taxonomy );
 		$term_html = '';
 
 		if ( count( $terms ) ) {
