@@ -241,6 +241,8 @@ class WDS_Log_Post {
 		}
 
 		wp_enqueue_style( $this->key . '_admin_css' );
+		// No autosaving.
+		wp_dequeue_script( 'autosave' );
 	}
 
 	/**
