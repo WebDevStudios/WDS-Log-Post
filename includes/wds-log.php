@@ -41,7 +41,8 @@ class WDSLP_Wds_Log extends CPT_Core {
 		parent::__construct(
 			array( __( 'WDS Log', 'wds-log-post' ), __( 'WDS Logs', 'wds-log-post' ), $this->post_type ),
 			array(
-				'supports'          => array( 'title', 'editor', ),
+				// 'supports'          => array( 'title', 'editor', ),
+				'supports'          => false,
 				'menu_icon'         => 'dashicons-book-alt',
 				'show_in_admin_bar' => false,
 				'public'            => false,
@@ -70,6 +71,7 @@ class WDSLP_Wds_Log extends CPT_Core {
 		add_filter( "manage_{$this->post_type}_posts_columns", array( $this, 'add_log_type_column' ) );
 		add_action( "manage_{$this->post_type}_posts_custom_column", array( $this, 'alter_post_row_titles' ), 10, 2 );
 		add_filter( "bulk_actions-edit-{$this->post_type}", array( $this, 'remove_bulk_actions' ) );
+		add_action( 'edit_form_after_title', array( $this, 'output_title_content' ) );
 
 		// Add custom taxonomy filter
 		add_action( 'restrict_manage_posts', array( $this, 'add_taxonomy_filter' ) );
@@ -232,6 +234,14 @@ jQuery( document ).ready( function( $ ) {
 			$edit_link = get_edit_post_link( $post_id );
 			echo sprintf( '%s <a href="%s">%s</a>', $this->get_term_tag_html( $post_id ), $edit_link, get_the_title() );
 		}
+	}
+
+	public function output_title_content( $post ) {
+		if ( ! isset( $post->post_type ) || $this->post_type !== $post->post_type ) {
+			return;
+		}
+
+		the_title( '<h2>', '</h2>' );
 	}
 
 	protected function get_term_tag_html( $post_id ) {
