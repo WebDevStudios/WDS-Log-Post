@@ -47,6 +47,10 @@ class WDSLP_Wds_Log extends CPT_Core {
 				'public'            => false,
 				'hierarchical'      => false,
 				'menu_position'     => 100,
+				'capabilities' => array(
+					'create_posts' => is_multisite() ? 'do_not_allow' : false, // Removes support for the "Add New" function (use 'do_not_allow' instead of false for multisite set ups)
+					'delete_posts' => true,
+				),
 			)
 		);
 	}
@@ -58,68 +62,23 @@ class WDSLP_Wds_Log extends CPT_Core {
 	 * @return  null
 	 */
 	public function hooks() {
-		// Remove "Add New"...
-		add_action( 'admin_menu', array( $this, 'remove_add_menu' ) ); // From sidebar menu
-		add_action( 'admin_head-edit.php', array( $this, 'alter_list_view' ) ); // From list view
-		// Failsafe against actually getting to the Add New page
-		add_action( 'load-post-new.php', array( $this, 'prevent_create_post' ) );
-
 		// Remove meta boxes
-		add_action( 'admin_head-post.php', array( $this, 'remove_edit_controls' ) );
+		// add_action( 'admin_head-post.php', array( $this, 'remove_edit_controls' ) );
 
 		// Alter edit list row actions
 		add_action( 'post_row_actions', array( $this, 'alter_post_row_actions' ), 10, 2 );
-		add_filter( 'manage_wdslp-wds-log_posts_columns', array( $this, 'add_log_type_column' ) );
-		add_action( 'manage_wdslp-wds-log_posts_custom_column', array( $this, 'alter_post_row_titles' ), 10, 2 );
+		add_filter( "manage_{$this->post_type}_posts_columns", array( $this, 'add_log_type_column' ) );
+		add_action( "manage_{$this->post_type}_posts_custom_column", array( $this, 'alter_post_row_titles' ), 10, 2 );
+		add_filter( "bulk_actions-edit-{$this->post_type}", array( $this, 'remove_bulk_actions' ) );
 
 		// Add custom taxonomy filter
 		add_action( 'restrict_manage_posts', array( $this, 'add_taxonomy_filter' ) );
 		add_action( 'parse_query', array( $this, 'filter_admin_list_taxonomy' ) );
 	}
 
-	/**
-	 * Remove the submenu for adding a new log post
-	 *
-	 * @since 0.1.0
-	 */
-	public function remove_add_menu() {
-		global $submenu;
-		unset( $submenu[ 'edit.php?post_type=' . $this->post_type ][10] );
-	}
-
-	/**
-	 * Removes the 'Add New' button from the list view screen and also removes
-	 * the "Edit" bulk action
-	 *
-	 * @since 0.1.0
-	 */
-	public function alter_list_view() {
-		$screen = get_current_screen();
-
-		if ( null === $screen || $this->post_type !== $screen->post_type ) {
-			return;
-		}
-
-		echo <<<HTML
-<script>
-jQuery(document).ready(function($){
-	$('#bulk-action-selector-top').find('option[value="edit"]').remove();
-});
-</script>
-HTML;
-	}
-
-	/**
-	 * No one should ever be able to create a new Log Post through the UI
-	 *
-	 * @since 0.1.0
-	 */
-	public function prevent_create_post() {
-		$screen = get_current_screen();
-
-		if ( 'add' === $screen->action && 'post' === $screen->base && $this->post_type === $screen->post_type ) {
-			wp_die( __( 'This post type is read-only' ) );
-		}
+	function remove_bulk_actions( $actions ) {
+		unset( $actions['edit'] );
+		return $actions;
 	}
 
 	/**
