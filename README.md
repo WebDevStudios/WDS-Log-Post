@@ -52,6 +52,34 @@ if ( something_went_wrong ) {
 WDS_Log_Post::log_message( 'This is a general error, for whatever reason', '', array( 'general' , 'error' ) );
 ```
 
+### New in 0.2.x ###
+
+The 0.2.x release sees the addition of updatable logs.
+
+```php
+// Create a log and record it's ID
+$my_new_log = WDS_Log_Post::log_message( 'This is beginning', '', 'general' );
+
+// Update it by passing the generated ID to the log_message method
+WDS_Log_Post::log_message( 'Title update', 'content update', '', $my_new_log );
+
+if ( $we_are_done ) {
+	// Complete a log by passing the final parameter
+	WDS_Log_Post::log_message( 'The final update', 'We are done', '', $my_new_log, true );
+} else {
+	// We can also abort logs now!
+	WDS_Log_Post::abort_progress( $my_new_log );
+}
+```
+
+Updatable logs also include the ability to dispaly progress. The progress bar will be updated via the WP Heartbeat API
+if you update the same log ID while the post is being viewed.
+
+```php
+// Update progress to 50%
+WDS_Log_Post::log_progress( $my_new_log, 50 );
+```
+
 ## Tweaking ##
 
 ### Access Control ###
@@ -71,6 +99,21 @@ different checks for roles or capabilities and want to know if the logs have bee
 
 ### Term Styling ###
 
+**Deprecated** This is moving to using standard CSS, and in the future inline styles will not be supported (likely
+in the next major release).
+
+__Preferred CSS Method__
+
+CSS classes should be `.wds-log-tag.<slug>` where `<slug>` is your custom term's slug.
+
+```css
+.wds-log-tag.warning {
+	background: #ffff99;
+}
+```
+
+__The Old Way (inline CSS)__
+
 This post type uses a hidden taxonomy, `wds_log_type`, whose terms are the different log types. This plugin comes with
 two built-in types: 'General' and 'Error.' You can add more with the `wds_log_post_log_types` filter:
 
@@ -89,6 +132,12 @@ add_filter( 'wds_log_post_log_types', function ( $terms ) {
 ```
 
 ## Changelog ##
+
+### 0.2.3 ###
+* Now supports updating existing log posts.
+* Progress bar is enabled for updated posts.
+* Adds ability to abort or complete in-progress logs.
+* Deprecated inlince CSS for tag styles.
 
 ### 0.1.2 ###
 * Fix a bug with calling `wp_users` instead of `$wpdb->users`
