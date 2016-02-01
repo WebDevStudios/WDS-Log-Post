@@ -20,7 +20,7 @@ module.exports = function (grunt) {
                 }
             },
             scripts: {
-                files: ['assets/**/*.js'],
+                files: ['assets/js/src/*.js'],
                 tasks: ['scripts'],
                 options: {
                     spawn: false,
@@ -71,10 +71,34 @@ module.exports = function (grunt) {
                 },
                 files: { src: ['assets/css/wds-log-post.min.css'] }
             }
+        },
+        jshint: {
+            all: [
+                'assets/js/**/*.js',
+                '!**/*.min.js'
+            ],
+            options: {
+                browser: true,
+                predef: [
+                    'document',
+                    'window',
+                    'jQuery',
+                    'undefined'
+                ]
+            }
+        },
+        uglify: {
+            dist: {
+                files: { 'assets/js/main.min.js': 'assets/js/src/*.js' },
+                options: { banner: compactBannerTemplate }
+            }
         }
     });
     // Default task.
-    grunt.registerTask('scripts', []);
+    grunt.registerTask('scripts', [
+        'jshint',
+        'uglify'
+    ]);
     grunt.registerTask('styles', [
         'sass',
         'cssmin',

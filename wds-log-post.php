@@ -3,7 +3,7 @@
  * Plugin Name: WDS Log Post
  * Plugin URI:  http://webdevstudios.com
  * Description: A Log custom post type for logging all the things!
- * Version:     0.2.2
+ * Version:     0.2.3
  * Author:      WebDevStudios
  * Author URI:  http://webdevstudios.com
  * Donate link: http://webdevstudios.com
@@ -74,7 +74,7 @@ class WDS_Log_Post {
 	 * @var  string
 	 * @since  0.1.0
 	 */
-	const VERSION = '0.1.2';
+	const VERSION = '0.2.3';
 
 	/**
 	 * URL of plugin directory
@@ -227,10 +227,7 @@ class WDS_Log_Post {
 	public function register_enqueue_scripts_styles() {
 		$min = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min';
 		wp_register_style( $this->key . '_admin_css', self::url( "assets/css/wds-log-post{$min}.css" ), $this->version );
-
-		// Enqueue progress bar.
-		wp_enqueue_script( 'jquery-ui-progressbar' );
-		wp_enqueue_script( 'heartbeat' );
+		wp_register_script( $this->key . '_admin_js', self::url( 'assets/js/main.min.js' ), array( 'jquery' ), self::VERSION );
 	}
 
 	public function maybe_enqueue_scripts_styles() {
@@ -241,6 +238,11 @@ class WDS_Log_Post {
 		}
 
 		wp_enqueue_style( $this->key . '_admin_css' );
+
+		// Enqueue progress bar.
+		wp_enqueue_script( 'jquery-ui-progressbar' );
+		wp_enqueue_script( 'heartbeat' );
+		wp_enqueue_script( $this->key . '_admin_js' );
 	}
 
 	/**
@@ -294,6 +296,7 @@ class WDS_Log_Post {
 			case 'basename':
 			case 'url':
 			case 'path':
+			case 'key':
 				return $this->$field;
 			default:
 				throw new Exception( 'Invalid '. __CLASS__ .' property: ' . $field );

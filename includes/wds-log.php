@@ -2,10 +2,13 @@
 /**
  * WDS Log Post Wds Log
  *
- * @version 0.1.1
+ * @version 0.2.0
  * @package WDS Log Post
  *
  * Changelog
+ * 0.2.0
+ * - Begin moving to CSS classes over term description.
+ * - Move 99% of JS to separate script.
  * 0.1.1
  * - Restrict admin UI
  */
@@ -65,7 +68,7 @@ class WDSLP_Wds_Log extends CPT_Core {
 		add_action( 'load-post-new.php', array( $this, 'prevent_create_post' ) );
 
 		// Remove meta boxes
-		add_action( 'admin_head-post.php', array( $this, 'remove_edit_controls' ) );
+		add_action( 'admin_head-post.php', array( $this, 'alter_post_view' ) );
 
 		// Alter edit list row actions
 		add_action( 'post_row_actions', array( $this, 'alter_post_row_actions' ), 10, 2 );
@@ -99,14 +102,6 @@ class WDSLP_Wds_Log extends CPT_Core {
 		if ( null === $screen || $this->post_type !== $screen->post_type ) {
 			return;
 		}
-
-		echo <<<HTML
-<script>
-jQuery(document).ready(function($){
-	$('#bulk-action-selector-top').find('option[value="edit"]').remove();
-});
-</script>
-HTML;
 	}
 
 	/**
@@ -127,18 +122,32 @@ HTML;
 	 *
 	 * @since 0.1.1
 	 */
-	public function remove_edit_controls() {
+	public function alter_post_view() {
 		global $post;
+		global $wp_meta_boxes;
+
 		$screen = get_current_screen();
 
 		if ( null === $screen || $this->post_type !== $screen->post_type ) {
 			return;
 		}
 
-		global $wp_meta_boxes;
 		$wp_meta_boxes[ $this->post_type ] = array();
 
-		$remove_elements = array(
+		wp_localize_script( $this->plugin->key . '_admin_js', 'wds_log_post', array(
+			'tax_info'         => $this->get_term_tag_html( $post->ID ),
+			'progress_value'   => get_post_meta( $post->ID, '_wds_log_progress', true ),
+			'progress_aborted' => get_post_meta( $post->ID, '_wds_log_progress_aborted', true ) ? 'true' : 'false',
+			'messages'         => array(
+				'complete'              => __( 'Complete', 'wds-log-post' ),
+				'current_task_progress' => __( 'Current Task Progress', 'wds-log-post' ),
+				'process_aborted'       => __( 'Process Aborted', 'wds-log-post' ),
+				'process_complete'      => __( 'Process Complete', 'wds-log-post' ),
+			),
+		) );
+
+		// Elements to remove from the page.
+		$remove_elements = implode( ',', array(
 			'#screen-options-link-wrap',
 			'#edit-slug-box',
 			'#ed_toolbar',
@@ -146,28 +155,12 @@ HTML;
 			'#wp-word-count',
 			'a.page-title-action',
 			'#wpbody-content .wrap h1',
-		);
-
-		$remove_elements = implode(',', $remove_elements);
-		$tax_info = $this->get_term_tag_html( $post->ID );
-
-		$progress_html = '';
-		$progress_value = false;
-
-		if ( '' !== get_post_meta( $post->ID, '_wds_log_progress', true ) ) {
-			$progress_value = absint( get_post_meta( $post->ID, '_wds_log_progress', true ) );
-			$aborted = get_post_meta( $post->ID, '_wds_log_progress_aborted', true ) ? 'true' : 'false';
-			$progress_html = implode( '', array(
-				'<div id="wds-log-progress-holder">',
-					'<div class="spinner" style="visibility:visible; float: left;"></div>',
-					'<strong style="float:left; margin: 5px" id="wds-log-progress-label">Current Task Progress:</strong>',
-					'<div style="float: right" class="media-progress-bar" id="wds_log_progress" title="' . sprintf( __( '%d%% Complete', 'wds-log-post' ), $progress_value ) . '"></div>',
-				'</div>',
-			));
-		}
-
+		) );
 		?>
 <style>
+/**
+ * Hide these elements with CSS first.
+ */
 <?php echo $remove_elements; ?> {
 	display: none;
 	visibility: hidden;
@@ -175,61 +168,7 @@ HTML;
 </style>
 <script>
 jQuery( document ).ready( function( $ ) {
-	/**
-	 * Replace the title and post content with readonly fields
-	 */
-	$('input[name="post_title"]').replaceWith( function() {
-		return '<h2>' + this.value + '</h2>';
-	});
-
-	$('textarea.wp-editor-area').replaceWith( function() {
-		var height = parseFloat( 0.6 * $(window).outerHeight(), 10 );
-		var ret_html = '<pre class="wp-editor-area"><?php echo $tax_info; ?> <hr/>';
-		ret_html += '<textarea id="wds-log-content" style="width:100%;min-height:'+ height +'px" readonly="readonly">';
-		ret_html += $(this).val() + '</textarea></pre><?php echo $progress_html; ?>';
-		return ret_html;
-	});
-
-	<?php if ( $progress_value ) : ?>
-		var jQprogress = $( '#wds_log_progress' );
-		var percent = parseInt( <?php echo $progress_value; ?>, 10 );
-		var aborted = <?php echo $aborted; ?>;
-		var complete = function( aborted ) {
-			$('#wds-log-progress-holder .spinner').remove();
-			var dashClass = aborted ? 'dashicons-no' : 'dashicons-yes';
-			var message = aborted ? '<?php _e( 'Process aborted', 'wds-log-post' ); ?>' : '<?php _e( 'Process complete!', 'wds-log-post' ); ?>';
-			$('#wds-log-progress-label').text( message ).addClass('dashicons-before ' + dashClass);
-			$(document).off( 'heartbeat-tick', tick );
-		};
-
-		var setStatus = function( percent, aborted ) {
-			jQprogress.progressbar({value: percent }).attr( 'title', percent + '<?php _e( '% Complete', 'wds-log-post' ); ?>' );
-
-			if ( percent >= 100 ) {
-				complete( aborted ? true : false );
-			} else if ( aborted ) {
-				complete( true );
-			}
-		};
-
-		var tick = function(e, data) {
-			if ( data.wdslp_progress && data.wdslp_progress <= 100 ) {
-				setStatus( parseInt( data.wdslp_progress, 10 ), data.wdslp_progress_aborted );
-			}
-
-			if ( data.wdslp_content ) {
-				$('#wds-log-content' ).val( data.wdslp_content );
-			}
-		};
-
-		$(document).on( 'heartbeat-tick', tick );
-
-		setStatus( percent, aborted );
-
-	<?php else: ?>
-		$('#wds-log-progress-holder').remove();
-	<?php endif; ?>
-	// Really remove everything
+	// Really remove everything.
 	$('<?php echo $remove_elements; ?>').remove();
 });
 </script>
@@ -279,6 +218,7 @@ jQuery( document ).ready( function( $ ) {
 		$terms = wp_get_object_terms( $post_id, $this->plugin->custom_taxonomy->taxonomy );
 		$term_html = '';
 
+		// @deprecated Style from the description field is going away in favor of CSS classes.
 		if ( count( $terms ) ) {
 			foreach ( $terms as $term ) {
 				$term_html .= sprintf( '<span class="wds-log-tag %s" style="%s">%s</span>', $term->slug, $term->description, $term->name );
