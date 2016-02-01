@@ -49,8 +49,8 @@ class WDSLP_Wds_Log extends CPT_Core {
 				'hierarchical'      => false,
 				'menu_position'     => 100,
 				'capabilities' => array(
-					'create_posts' => is_multisite() ? 'do_not_allow' : false, // Removes support for the "Add New" function (use 'do_not_allow' instead of false for multisite set ups)
-					'delete_posts' => true,
+					'create_posts'  => is_multisite() ? 'do_not_allow' : false, // Removes support for the "Add New" function (use 'do_not_allow' instead of false for multisite set ups)
+					'delete_posts'  => 'delete_posts',
 				),
 			)
 		);
@@ -63,19 +63,32 @@ class WDSLP_Wds_Log extends CPT_Core {
 	 * @return  null
 	 */
 	public function hooks() {
-		// Remove meta boxes
-		// add_action( 'admin_head-post.php', array( $this, 'remove_edit_controls' ) );
-
 		// Alter edit list row actions
 		add_action( 'post_row_actions', array( $this, 'alter_post_row_actions' ), 10, 2 );
 		add_filter( "manage_{$this->post_type}_posts_columns", array( $this, 'add_log_type_column' ) );
 		add_action( "manage_{$this->post_type}_posts_custom_column", array( $this, 'alter_post_row_titles' ), 10, 2 );
 		add_filter( "bulk_actions-edit-{$this->post_type}", array( $this, 'remove_bulk_actions' ) );
+		add_action( 'add_meta_boxes', array( $this, 'update_title_global' ) );
 		add_action( 'edit_form_after_title', array( $this, 'output_title_content' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'screen_layout_columns', array( $this, 'adjust_view_for_single_cpt' ), 10, 3 );
 
 		// Add custom taxonomy filter
 		add_action( 'restrict_manage_posts', array( $this, 'add_taxonomy_filter' ) );
 		add_action( 'parse_query', array( $this, 'filter_admin_list_taxonomy' ) );
+	}
+
+	public function enqueue_scripts() {
+		if ( ! function_exists( 'get_current_screen' ) ) {
+			return;
+		}
+		$screen = get_current_screen();
+
+		if ( ! isset( $screen->id ) || $this->post_type !== $screen->id ) {
+			return;
+		}
+
+		wp_enqueue_style( 'media-views' );
 	}
 
 	function remove_bulk_actions( $actions ) {
@@ -83,73 +96,32 @@ class WDSLP_Wds_Log extends CPT_Core {
 		return $actions;
 	}
 
+	function adjust_view_for_single_cpt( $columns, $screen_id, $screen ) {
+		if ( $this->post_type !== $screen_id ) {
+			return $columns;
+		}
+
+		$columns = array(
+			'max' => 1,
+			'default' => 1,
+		);
+		$screen->add_option( 'layout_columns', $columns );
+
+		remove_meta_box( 'submitdiv', $screen, 'side' );
+		remove_meta_box( 'slugdiv', $this->post_type, 'normal' );
+
+		return $columns;
+	}
+
 	/**
 	 * Alter the edit page to remove just about everything
 	 *
 	 * @since 0.1.1
 	 */
-	public function remove_edit_controls() {
-		global $post;
-		$screen = get_current_screen();
-
-		if ( null === $screen || $this->post_type !== $screen->post_type ) {
-			return;
-		}
-
-		global $wp_meta_boxes;
-		$wp_meta_boxes[ $this->post_type ] = array();
-
-		$remove_elements = array(
-			'#screen-options-link-wrap',
-			'#edit-slug-box',
-			'#ed_toolbar',
-			'#wp-content-editor-tools',
-			'#wp-word-count',
-			'a.page-title-action',
-			'#wpbody-content .wrap h1',
-		);
-
-		$remove_elements = implode(',', $remove_elements);
-		$tax_info = $this->get_term_tag_html( $post->ID );
-
-		$progress_html = '';
-		$progress_value = false;
-
-		if ( '' !== get_post_meta( $post->ID, '_wds_log_progress', true ) ) {
-			$progress_value = absint( get_post_meta( $post->ID, '_wds_log_progress', true ) );
-			$aborted = get_post_meta( $post->ID, '_wds_log_progress_aborted', true ) ? 'true' : 'false';
-			$progress_html = implode( '', array(
-				'<div id="wds-log-progress-holder">',
-					'<div class="spinner" style="visibility:visible; float: left;"></div>',
-					'<strong style="float:left; margin: 5px" id="wds-log-progress-label">Current Task Progress:</strong>',
-					'<div style="float: right" class="media-progress-bar" id="wds_log_progress" title="' . sprintf( __( '%d%% Complete', 'wds-log-post' ), $progress_value ) . '"></div>',
-				'</div>',
-			));
-		}
-
+	public function progress_js( $progress_value, $aborted) {
 		?>
-<style>
-<?php echo $remove_elements; ?> {
-	display: none;
-	visibility: hidden;
-}
-</style>
 <script>
 jQuery( document ).ready( function( $ ) {
-	/**
-	 * Replace the title and post content with readonly fields
-	 */
-	$('input[name="post_title"]').replaceWith( function() {
-		return '<h2>' + this.value + '</h2>';
-	});
-
-	$('textarea.wp-editor-area').replaceWith( function() {
-		var height = parseFloat( 0.6 * $(window).outerHeight(), 10 );
-		var ret_html = '<pre class="wp-editor-area"><?php echo $tax_info; ?> <hr/>';
-		ret_html += '<textarea id="wds-log-content" style="width:100%;min-height:'+ height +'px" readonly="readonly">';
-		ret_html += $(this).val() + '</textarea></pre><?php echo $progress_html; ?>';
-		return ret_html;
-	});
 
 	<?php if ( $progress_value ) : ?>
 		var jQprogress = $( '#wds_log_progress' );
@@ -190,8 +162,6 @@ jQuery( document ).ready( function( $ ) {
 	<?php else: ?>
 		$('#wds-log-progress-holder').remove();
 	<?php endif; ?>
-	// Really remove everything
-	$('<?php echo $remove_elements; ?>').remove();
 });
 </script>
 <?php
@@ -236,12 +206,40 @@ jQuery( document ).ready( function( $ ) {
 		}
 	}
 
+	public function update_title_global() {
+		// Replaces the h1 title, which is normally $post_type_object->labels->edit_item
+		$GLOBALS['title'] = the_title( '<h2>', '</h2>', false );
+	}
+
 	public function output_title_content( $post ) {
 		if ( ! isset( $post->post_type ) || $this->post_type !== $post->post_type ) {
 			return;
 		}
 
-		the_title( '<h2>', '</h2>' );
+		echo '<pre class="wp-editor-area wp-editor-container">'. $this->get_term_tag_html( $post->ID ) . '<hr/>';
+		echo '<textarea id="wds-log-content" style="width:100%;min-height:500px" readonly="readonly">';
+		print_r( $post->post_content );
+		echo '</textarea></pre>';
+
+		$progress_html = '';
+		$progress_value = false;
+
+		if ( '' !== get_post_meta( $post->ID, '_wds_log_progress', true ) ) {
+			$progress_value = absint( get_post_meta( $post->ID, '_wds_log_progress', true ) );
+			$aborted = get_post_meta( $post->ID, '_wds_log_progress_aborted', true ) ? 'true' : 'false';
+			$progress_html = implode( '', array(
+				'<div id="wds-log-progress-holder">',
+					'<div class="spinner" style="visibility:visible; float: left;"></div>',
+					'<strong style="float:left; margin: 5px" id="wds-log-progress-label">Current Task Progress:</strong>',
+					'<div style="float: right" class="media-progress-bar" id="wds_log_progress" title="' . sprintf( __( '%d%% Complete', 'wds-log-post' ), $progress_value ) . '"></div>',
+				'</div>',
+			));
+		}
+
+		echo $progress_html;
+
+		// use sep. JS file, and move all the other JS there
+		$this->progress_js( $progress_value, $aborted );
 	}
 
 	protected function get_term_tag_html( $post_id ) {
