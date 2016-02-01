@@ -2,10 +2,13 @@
 /**
  * WDS Log Post Wds Log
  *
- * @version 0.1.1
+ * @version 0.2.0
  * @package WDS Log Post
  *
  * Changelog
+ * 0.2.0
+ * - Begin moving to CSS classes over term description.
+ * - Move 99% of JS to separate script.
  * 0.1.1
  * - Restrict admin UI
  */
@@ -35,7 +38,6 @@ class WDSLP_Wds_Log extends CPT_Core {
 	public function __construct( $plugin ) {
 		$this->plugin = $plugin;
 		$this->hooks();
-		$this->register_scripts();
 
 		// Register this cpt
 		// First parameter should be an array with Singular, Plural, and Registered name
@@ -77,12 +79,6 @@ class WDSLP_Wds_Log extends CPT_Core {
 		// Add custom taxonomy filter
 		add_action( 'restrict_manage_posts', array( $this, 'add_taxonomy_filter' ) );
 		add_action( 'parse_query', array( $this, 'filter_admin_list_taxonomy' ) );
-
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-	}
-
-	protected function register_scripts() {
-		wp_register_script( 'alter-list-view', $this->plugin::url( 'assets/js/main.min.js' ), $this->plugin::VERSION );
 	}
 
 	public function enqueue_scripts() {
