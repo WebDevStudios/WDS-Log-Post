@@ -245,7 +245,7 @@ jQuery( document ).ready( function( $ ) {
 	}
 
 	protected function get_term_tag_html( $post_id ) {
-		$terms = wp_get_object_terms( $post_id, $this->plugin->custom_taxonomy->taxonomy );
+		$terms = get_the_terms( $post_id, $this->plugin->custom_taxonomy->taxonomy );
 		$term_html = '';
 
 		if ( count( $terms ) ) {
