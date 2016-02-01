@@ -58,18 +58,9 @@ class WDSLP_Custom_Taxonomy {
 	protected function register_terms() {
 		// Setup a point for adding terms
 		$terms = array(
-			'General' => array(
-				'slug'        => 'general',
-				'description' => 'background-color:#00ee00;',
-			),
-			'Error' => array(
-				'slug'        => 'error',
-				'description' => 'background-color:#ff0000;',
-			),
-			'Debug' => array(
-				'slug'        => 'debug',
-				'description' => '',
-			),
+			'General' => array( 'slug' => 'general' ),
+			'Error'   => array( 'slug' => 'error' ),
+			'Debug'   => array( 'slug' => 'debug' ),
 		);
 
 		$terms = apply_filters( 'wds_log_post_log_types', $terms );
