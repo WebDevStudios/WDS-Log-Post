@@ -118,60 +118,6 @@ class WDSLP_Wds_Log extends CPT_Core {
 	}
 
 	/**
-	 * Alter the edit page to remove just about everything
-	 *
-	 * @since 0.1.1
-	 */
-	public function progress_js( $progress_value, $aborted) {
-		?>
-<script>
-jQuery( document ).ready( function( $ ) {
-
-	<?php if ( $progress_value ) : ?>
-		var jQprogress = $( '#wds_log_progress' );
-		var percent = parseInt( <?php echo $progress_value; ?>, 10 );
-		var aborted = <?php echo $aborted; ?>;
-		var complete = function( aborted ) {
-			$('#wds-log-progress-holder .spinner').remove();
-			var dashClass = aborted ? 'dashicons-no' : 'dashicons-yes';
-			var message = aborted ? '<?php _e( 'Process aborted', 'wds-log-post' ); ?>' : '<?php _e( 'Process complete!', 'wds-log-post' ); ?>';
-			$('#wds-log-progress-label').text( message ).addClass('dashicons-before ' + dashClass);
-			$(document).off( 'heartbeat-tick', tick );
-		};
-
-		var setStatus = function( percent, aborted ) {
-			jQprogress.progressbar({value: percent }).attr( 'title', percent + '<?php _e( '% Complete', 'wds-log-post' ); ?>' );
-
-			if ( percent >= 100 ) {
-				complete( aborted ? true : false );
-			} else if ( aborted ) {
-				complete( true );
-			}
-		};
-
-		var tick = function(e, data) {
-			if ( data.wdslp_progress && data.wdslp_progress <= 100 ) {
-				setStatus( parseInt( data.wdslp_progress, 10 ), data.wdslp_progress_aborted );
-			}
-
-			if ( data.wdslp_content ) {
-				$('#wds-log-content' ).val( data.wdslp_content );
-			}
-		};
-
-		$(document).on( 'heartbeat-tick', tick );
-
-		setStatus( percent, aborted );
-
-	<?php else: ?>
-		$('#wds-log-progress-holder').remove();
-	<?php endif; ?>
-});
-</script>
-<?php
-	}
-
-	/**
 	 * Changes a lot of the post row actions like quick edit etc
 	 *
 	 * @since 0.1.1
@@ -250,6 +196,7 @@ jQuery( document ).ready( function( $ ) {
 		$terms = get_the_terms( $post_id, $this->plugin->custom_taxonomy->taxonomy );
 		$term_html = '';
 
+		// @deprecated Style from the description field is going away in favor of CSS classes.
 		if ( count( $terms ) ) {
 			foreach ( $terms as $term ) {
 				$term_html .= sprintf( '<span class="wds-log-tag %s" style="%s">%s</span>', $term->slug, $term->description, $term->name );
