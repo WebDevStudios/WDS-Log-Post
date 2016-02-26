@@ -453,14 +453,16 @@ class WDS_Log_Post {
 				$term = get_term_by( 'slug', $term_lookup, $self->custom_taxonomy->taxonomy );
 
 				if ( false === $term ) {
-					throw new Exception( sprintf( __( 'Could not find term %s for post_type %s' ), $term_lookup, $self->cpt->post_type ) );
+					error_log( sprintf( __( __CLASS__ . ': Could not find term %s for post_type %s' ), $term_lookup, $self->cpt->post_type ) );
 				}
 
 				$terms[] = $term->term_id;
 
 			}
 
-			wp_set_object_terms( $log_post_id, $terms, $self->custom_taxonomy->taxonomy );
+			if ( count( $terms ) ) {
+				wp_set_object_terms( $log_post_id, $terms, $self->custom_taxonomy->taxonomy );
+			}
 		}
 
 		return $log_post_id;
