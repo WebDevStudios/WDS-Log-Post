@@ -175,7 +175,7 @@ jQuery( document ).ready( function( $ ) {
 	 * @return array
 	 */
 	public function alter_post_row_actions( $actions, $post ) {
-		if ( ! $this->post_type === $post->post_type ) {
+		if ( $this->post_type !== $post->post_type ) {
 			return $actions;
 		}
 
