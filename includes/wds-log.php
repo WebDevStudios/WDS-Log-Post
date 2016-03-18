@@ -247,7 +247,7 @@ jQuery( document ).ready( function( $ ) {
 		$terms = get_the_terms( $post_id, $this->plugin->custom_taxonomy->taxonomy );
 		$term_html = '';
 
-		if ( count( $terms ) ) {
+		if ( ! empty( $terms ) ) {
 			foreach ( $terms as $term ) {
 				$term_html .= sprintf( '<span class="wds-log-tag %s" style="%s">%s</span>', $term->slug, $term->description, $term->name );
 			}
