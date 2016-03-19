@@ -414,8 +414,7 @@ class WDS_Log_Post {
 			'post_status'  => 'publish',
 		);
 
-		if ( null !== $log_post_id ) {
-			$log_post = get_post( $log_post_id );
+		if ( null !== $log_post_id && ( $log_post = get_post( $log_post_id ) ) ) {
 			$log_post_arr['ID'] = $log_post_id;
 
 			// Setup the title.
