@@ -3,7 +3,7 @@
  * Plugin Name: WDS Log Post
  * Plugin URI:  http://webdevstudios.com
  * Description: A Log custom post type for logging all the things!
- * Version:     0.2.2
+ * Version:     0.2.3
  * Author:      WebDevStudios
  * Author URI:  http://webdevstudios.com
  * Donate link: http://webdevstudios.com
@@ -236,7 +236,7 @@ class WDS_Log_Post {
 	public function maybe_enqueue_scripts_styles() {
 		$screen = get_current_screen();
 
-		if ( ! $this->cpt->post_type === $screen->post_type ) {
+		if ( $this->cpt->post_type !== $screen->post_type ) {
 			return;
 		}
 
