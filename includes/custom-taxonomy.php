@@ -84,6 +84,13 @@ class WDSLP_Custom_Taxonomy {
 			),
 		);
 
+		/**
+		 * Filter the taxonomy terms that should be registered.
+		 *
+		 * @since 0.1.0
+		 *
+		 * @param array $terms The array of terms and their data. See default terms above for the format.
+		 */
 		$terms = apply_filters( 'wds_log_post_log_types', $terms );
 
 		if ( count( $terms ) ) {
