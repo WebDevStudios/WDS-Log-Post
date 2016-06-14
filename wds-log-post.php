@@ -446,17 +446,29 @@ class WDS_Log_Post {
 				$term_slug = array( $term_slug );
 			}
 
-			$terms = array();
+			/**
+			 * Filter whether pre-defined terms are required.
+			 *
+			 * If pre-defined terms are not required, then unknown terms will be added.
+			 * 
+			 * @since 0.3.0
+			 * @author Jeremy Pry
+			 *
+			 * @param bool $require_terms Whether terms are required to be pre-defined.
+			 */
+			if ( apply_filters( 'wds_log_post_require_defined_terms', true ) ) {
+				$terms = array();
+				foreach ( $term_slug as $term_lookup ) {
+					$term = get_term_by( 'slug', $term_lookup, $self->custom_taxonomy->taxonomy );
 
-			foreach ( $term_slug as $term_lookup ) {
-				$term = get_term_by( 'slug', $term_lookup, $self->custom_taxonomy->taxonomy );
+					if ( false === $term ) {
+						error_log( sprintf( __( __CLASS__ . ': Could not find term %s for post_type %s' ), $term_lookup, $self->cpt->post_type ) );
+					}
 
-				if ( false === $term ) {
-					error_log( sprintf( __( __CLASS__ . ': Could not find term %s for post_type %s' ), $term_lookup, $self->cpt->post_type ) );
+					$terms[] = $term->term_id;
 				}
-
-				$terms[] = $term->term_id;
-
+			} else {
+				$terms = $term_slug;
 			}
 
 			if ( count( $terms ) ) {
