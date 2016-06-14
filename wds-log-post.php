@@ -3,7 +3,7 @@
  * Plugin Name: WDS Log Post
  * Plugin URI:  http://webdevstudios.com
  * Description: A Log custom post type for logging all the things!
- * Version:     0.2.3
+ * Version:     0.3.0
  * Author:      WebDevStudios
  * Author URI:  http://webdevstudios.com
  * Donate link: http://webdevstudios.com
@@ -74,7 +74,7 @@ class WDS_Log_Post {
 	 * @var  string
 	 * @since  0.1.0
 	 */
-	const VERSION = '0.1.2';
+	const VERSION = '0.3.0';
 
 	/**
 	 * URL of plugin directory
