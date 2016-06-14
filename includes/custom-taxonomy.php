@@ -9,7 +9,7 @@ class WDSLP_Custom_Taxonomy {
 	/**
 	 * Parent plugin class
 	 *
-	 * @var class
+	 * @var WDS_Log_Post
 	 * @since  0.1.0
 	 */
 	protected $plugin = null;
@@ -21,9 +21,10 @@ class WDSLP_Custom_Taxonomy {
 	 * Constructor
 	 *
 	 * @since 0.1.0
-	 * @return  null
+	 *
+	 * @param WDS_Log_Post $plugin The main plugin object.
 	 */
-	public function __construct( $plugin ) {
+	public function __construct( WDS_Log_Post $plugin ) {
 		$this->plugin = $plugin;
 		$this->hooks();
 	}
@@ -39,17 +40,29 @@ class WDSLP_Custom_Taxonomy {
 	}
 
 	public function register_custom_taxonomy() {
+		$args = array(
+			'label'             => __( 'Log Type' ),
+			'public'            => false,
+			'show_ui'           => false,
+			'show_in_menu'      => false,
+			'show_in_nav_menu'  => false,
+			'show_admin_column' => false,
+		);
+
+		/**
+		 * Filter the taxonomy arguments for our custom taxonomy.
+		 *
+		 * @since 0.3.0
+		 * @author Jeremy Pry
+		 *
+		 * @param array $args The arguments used to register the taxonomy.
+		 */
+		$args = apply_filters( 'wds_log_post_taxonomy_args', $args );
+
 		register_taxonomy(
 			$this->taxonomy,
 			$this->plugin->cpt->post_type,
-			array(
-				'label'             => __( 'Log Type' ),
-				'public'            => false,
-				'show_ui'           => false,
-				'show_in_menu'      => false,
-				'show_in_nav_menu'  => false,
-				'show_admin_column' => false,
-			)
+			$args
 		);
 
 		$this->register_terms();
@@ -72,6 +85,13 @@ class WDSLP_Custom_Taxonomy {
 			),
 		);
 
+		/**
+		 * Filter the taxonomy terms that should be registered.
+		 *
+		 * @since 0.1.0
+		 *
+		 * @param array $terms The array of terms and their data. See default terms above for the format.
+		 */
 		$terms = apply_filters( 'wds_log_post_log_types', $terms );
 
 		if ( count( $terms ) ) {

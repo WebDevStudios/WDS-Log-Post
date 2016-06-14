@@ -90,6 +90,11 @@ add_filter( 'wds_log_post_log_types', function ( $terms ) {
 
 ## Changelog ##
 
+### 0.3.0 ###
+* Added a filter to the term lookup code to determine whether pre-defined terms are required
+* Added a filter to the taxonomy registration arguments.
+* Update some docblocks
+
 ### 0.1.2 ###
 * Fix a bug with calling `wp_users` instead of `$wpdb->users`
 * Fix a fatal error when `get_current_screen()` hasn't been defined.

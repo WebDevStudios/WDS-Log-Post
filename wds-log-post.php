@@ -3,7 +3,7 @@
  * Plugin Name: WDS Log Post
  * Plugin URI:  http://webdevstudios.com
  * Description: A Log custom post type for logging all the things!
- * Version:     0.2.3
+ * Version:     0.3.0
  * Author:      WebDevStudios
  * Author URI:  http://webdevstudios.com
  * Donate link: http://webdevstudios.com
@@ -74,7 +74,7 @@ class WDS_Log_Post {
 	 * @var  string
 	 * @since  0.1.0
 	 */
-	const VERSION = '0.1.2';
+	const VERSION = '0.3.0';
 
 	/**
 	 * URL of plugin directory
@@ -393,15 +393,15 @@ class WDS_Log_Post {
 	}
 
 	/**
-	 * Creates a new log entry
+	 * Creates a new log entry.
 	 *
-	 * @param string $message               The message for the error. Should be concise, as it will be the log entry title.
-	 * @param string $full_message[='']     A longer message, if desired. This can include more detail.
-	 * @param mixed  $term_slug[='general'] A string or array of log types to assign to this entry.
-	 * @param int    $log_post_id[=null]    An option ID of the log message to update.
-	 * @param bool   $completed[=false]     If updating, specifcy whether this update is the last one.
+	 * @param string $title        The message for the error. Should be concise, as it will be the log entry title.
+	 * @param string $full_message A longer message, if desired. This can include more detail.
+	 * @param mixed  $term_slug    A string or array of log types to assign to this entry.
+	 * @param int    $log_post_id  An option ID of the log message to update.
+	 * @param bool   $completed    If updating, specifcy whether this update is the last one.
 	 *
-	 * @return int|WP_Error
+	 * @return int|WP_Error The ID of the log post, or WP_Error upon failure.
 	 */
 	public static function log_message( $title, $full_message = '', $term_slug = 'general', $log_post_id = null, $completed = false ) {
 		$self = self::get_instance();
@@ -446,17 +446,29 @@ class WDS_Log_Post {
 				$term_slug = array( $term_slug );
 			}
 
-			$terms = array();
+			/**
+			 * Filter whether pre-defined terms are required.
+			 *
+			 * If pre-defined terms are not required, then unknown terms will be added.
+			 * 
+			 * @since 0.3.0
+			 * @author Jeremy Pry
+			 *
+			 * @param bool $require_terms Whether terms are required to be pre-defined.
+			 */
+			if ( apply_filters( 'wds_log_post_require_defined_terms', true ) ) {
+				$terms = array();
+				foreach ( $term_slug as $term_lookup ) {
+					$term = get_term_by( 'slug', $term_lookup, $self->custom_taxonomy->taxonomy );
 
-			foreach ( $term_slug as $term_lookup ) {
-				$term = get_term_by( 'slug', $term_lookup, $self->custom_taxonomy->taxonomy );
+					if ( false === $term ) {
+						error_log( sprintf( __( __CLASS__ . ': Could not find term %s for post_type %s' ), $term_lookup, $self->cpt->post_type ) );
+					}
 
-				if ( false === $term ) {
-					error_log( sprintf( __( __CLASS__ . ': Could not find term %s for post_type %s' ), $term_lookup, $self->cpt->post_type ) );
+					$terms[] = $term->term_id;
 				}
-
-				$terms[] = $term->term_id;
-
+			} else {
+				$terms = $term_slug;
 			}
 
 			if ( count( $terms ) ) {
