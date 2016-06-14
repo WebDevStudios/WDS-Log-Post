@@ -39,17 +39,29 @@ class WDSLP_Custom_Taxonomy {
 	}
 
 	public function register_custom_taxonomy() {
+		$args = array(
+			'label'             => __( 'Log Type' ),
+			'public'            => false,
+			'show_ui'           => false,
+			'show_in_menu'      => false,
+			'show_in_nav_menu'  => false,
+			'show_admin_column' => false,
+		);
+
+		/**
+		 * Filter the taxonomy arguments for our custom taxonomy.
+		 *
+		 * @since 0.3.0
+		 * @author Jeremy Pry
+		 *
+		 * @param array $args The arguments used to register the taxonomy.
+		 */
+		$args = apply_filters( 'wds_log_post_taxonomy_args', $args );
+
 		register_taxonomy(
 			$this->taxonomy,
 			$this->plugin->cpt->post_type,
-			array(
-				'label'             => __( 'Log Type' ),
-				'public'            => false,
-				'show_ui'           => false,
-				'show_in_menu'      => false,
-				'show_in_nav_menu'  => false,
-				'show_admin_column' => false,
-			)
+			$args
 		);
 
 		$this->register_terms();
