@@ -393,15 +393,15 @@ class WDS_Log_Post {
 	}
 
 	/**
-	 * Creates a new log entry
+	 * Creates a new log entry.
 	 *
-	 * @param string $message               The message for the error. Should be concise, as it will be the log entry title.
-	 * @param string $full_message[='']     A longer message, if desired. This can include more detail.
-	 * @param mixed  $term_slug[='general'] A string or array of log types to assign to this entry.
-	 * @param int    $log_post_id[=null]    An option ID of the log message to update.
-	 * @param bool   $completed[=false]     If updating, specifcy whether this update is the last one.
+	 * @param string $title        The message for the error. Should be concise, as it will be the log entry title.
+	 * @param string $full_message A longer message, if desired. This can include more detail.
+	 * @param mixed  $term_slug    A string or array of log types to assign to this entry.
+	 * @param int    $log_post_id  An option ID of the log message to update.
+	 * @param bool   $completed    If updating, specifcy whether this update is the last one.
 	 *
-	 * @return int|WP_Error
+	 * @return int|WP_Error The ID of the log post, or WP_Error upon failure.
 	 */
 	public static function log_message( $title, $full_message = '', $term_slug = 'general', $log_post_id = null, $completed = false ) {
 		$self = self::get_instance();

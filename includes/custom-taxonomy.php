@@ -9,7 +9,7 @@ class WDSLP_Custom_Taxonomy {
 	/**
 	 * Parent plugin class
 	 *
-	 * @var class
+	 * @var WDS_Log_Post
 	 * @since  0.1.0
 	 */
 	protected $plugin = null;
@@ -21,9 +21,10 @@ class WDSLP_Custom_Taxonomy {
 	 * Constructor
 	 *
 	 * @since 0.1.0
-	 * @return  null
+	 *
+	 * @param WDS_Log_Post $plugin The main plugin object.
 	 */
-	public function __construct( $plugin ) {
+	public function __construct( WDS_Log_Post $plugin ) {
 		$this->plugin = $plugin;
 		$this->hooks();
 	}
