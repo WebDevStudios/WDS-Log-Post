@@ -412,7 +412,7 @@ class WDS_Log_Post {
 		$log_post_arr = array(
 			'post_title'   => $title,
 			'post_status'  => 'publish',
-			'post_slug'    => 'wds-log-' . uniqid(),
+			'post_name'    => 'wds-log-' . uniqid(),
 		);
 
 		if ( null !== $log_post_id && ( $log_post = get_post( $log_post_id ) ) ) {
