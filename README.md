@@ -90,6 +90,9 @@ add_filter( 'wds_log_post_log_types', function ( $terms ) {
 
 ## Changelog ##
 
+### 0.3.1 ###
+* Generate post slugs internally to avoid WP looking for slugs on it's own.
+
 ### 0.3.0 ###
 * Added a filter to the term lookup code to determine whether pre-defined terms are required
 * Added a filter to the taxonomy registration arguments.
