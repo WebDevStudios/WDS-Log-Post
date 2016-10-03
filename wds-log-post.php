@@ -145,7 +145,7 @@ class WDS_Log_Post {
 	 */
 	public static function get_instance( $posttype, $name = '' ) {
 		if ( null === self::$single_instance ) {
-			self::$single_instance = new self( $posttype, $name = '' );
+			self::$single_instance = new self( $posttype, $name );
 		}
 
 		return self::$single_instance;
@@ -214,7 +214,7 @@ class WDS_Log_Post {
 		$post_id = absint( $data['wp-refresh-post-lock']['post_id'] );
 		$post = get_post( $post_id );
 
-		if ( empty( $post ) || $this->cpt->post_type !== $post->post_type ) {
+		if ( empty( $post ) || $this->key !== $post->post_type ) {
 			return $response;
 		}
 
@@ -243,7 +243,7 @@ class WDS_Log_Post {
 	public function maybe_enqueue_scripts_styles() {
 		$screen = get_current_screen();
 
-		if ( $this->cpt->post_type !== $screen->post_type ) {
+		if ( $this->key !== $screen->post_type ) {
 			return;
 		}
 
@@ -282,8 +282,8 @@ class WDS_Log_Post {
 		if ( ! $user_can_see ) {
 			global $wp_post_types;
 
-			if ( isset( $wp_post_types[ $this->cpt->post_type ] ) ) {
-				unset( $wp_post_types[ $this->cpt->post_type ] );
+			if ( isset( $wp_post_types[ $this->key ] ) ) {
+				unset( $wp_post_types[ $this->key ] );
 			}
 		}
 	}
@@ -303,6 +303,7 @@ class WDS_Log_Post {
 			case 'basename':
 			case 'url':
 			case 'path':
+			case 'key':
 				return $this->$field;
 			default:
 				throw new Exception( 'Invalid '. __CLASS__ .' property: ' . $field );
@@ -471,7 +472,7 @@ class WDS_Log_Post {
 					$term = get_term_by( 'slug', $term_lookup, $self->custom_taxonomy->taxonomy );
 
 					if ( false === $term ) {
-						error_log( sprintf( __( __CLASS__ . ': Could not find term %s for post_type %s' ), $term_lookup, $self->cpt->post_type ) );
+						error_log( sprintf( __( __CLASS__ . ': Could not find term %s for post_type %s' ), $term_lookup, $posttype ) );
 					}
 
 					$terms[] = $term->term_id;
@@ -539,7 +540,7 @@ add_action( 'plugins_loaded', 'load_wds_log', 9999);
 function load_wds_log() {
 // Kick it off
     if ( apply_filters( 'wds_log_post_site_check', 'is_main_site' ) ) {
-    $posttypes = apply_filters( 'wds_log_post_types', array() );
+        $posttypes = apply_filters( 'wds_log_post_types', array() );
         if( count( $posttypes ) > 0){
             foreach ( $posttypes as $posttype => $name ) {
                 wds_log_post( $posttype, $name )->hooks();
