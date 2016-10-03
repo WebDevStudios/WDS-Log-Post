@@ -61,7 +61,7 @@ class WDSLP_Custom_Taxonomy {
 
 		register_taxonomy(
 			$this->taxonomy,
-			$this->plugin->cpt->post_type,
+			$this->plugin->key,
 			$args
 		);
 
