@@ -3,7 +3,7 @@
  * Plugin Name: WDS Log Post
  * Plugin URI:  http://webdevstudios.com
  * Description: A Log custom post type for logging all the things!
- * Version:     0.3.1
+ * Version:     0.4.0
  * Author:      WebDevStudios
  * Author URI:  http://webdevstudios.com
  * Donate link: http://webdevstudios.com
@@ -536,9 +536,16 @@ function wds_log_post( $posttype, $name ) {
 	return WDS_Log_Post::get_instance( $posttype, $name );
 }
 
+// Kick it off
 add_action( 'plugins_loaded', 'load_wds_log', 9999);
 function load_wds_log() {
-// Kick it off
+	/**
+	 * Filter the post types for logs.
+	 *
+	 * @since  0.4.0
+	 * @param  array $posttypes The array of post types to define for logging.
+	 * @return array
+	 */
     if ( apply_filters( 'wds_log_post_site_check', 'is_main_site' ) ) {
         $posttypes = apply_filters( 'wds_log_post_types', array() );
         if( count( $posttypes ) > 0){
