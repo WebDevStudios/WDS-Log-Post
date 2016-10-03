@@ -21,8 +21,6 @@ class WDSLP_Wds_Log extends CPT_Core {
 	 */
 	protected $plugin = null;
 
-	public $post_type = 'wdslp-wds-log';
-
 	protected $filter_key = 'wdslp_type_filter';
 
 	/**
@@ -39,7 +37,7 @@ class WDSLP_Wds_Log extends CPT_Core {
 		// Register this cpt
 		// First parameter should be an array with Singular, Plural, and Registered name
 		parent::__construct(
-			array( __( 'WDS Log', 'wds-log-post' ), __( 'WDS Logs', 'wds-log-post' ), $this->post_type ),
+			array( $this->plugin->name . ' ' . __( 'Log', 'wds-log-post' ), $this->plugin->name . ' ' . __( 'Logs', 'wds-log-post' ), $this->plugin->key ),
 			array(
 				// 'supports'          => array( 'title', 'editor', ),
 				'supports'          => false,
@@ -65,9 +63,9 @@ class WDSLP_Wds_Log extends CPT_Core {
 	public function hooks() {
 		// Alter edit list row actions
 		add_action( 'post_row_actions', array( $this, 'alter_post_row_actions' ), 10, 2 );
-		add_filter( "manage_{$this->post_type}_posts_columns", array( $this, 'add_log_type_column' ) );
-		add_action( "manage_{$this->post_type}_posts_custom_column", array( $this, 'alter_post_row_titles' ), 10, 2 );
-		add_filter( "bulk_actions-edit-{$this->post_type}", array( $this, 'remove_bulk_actions' ) );
+		add_filter( "manage_{$this->plugin->key}_posts_columns", array( $this, 'add_log_type_column' ) );
+		add_action( "manage_{$this->plugin->key}_posts_custom_column", array( $this, 'alter_post_row_titles' ), 10, 2 );
+		add_filter( "bulk_actions-edit-{$this->plugin->key}", array( $this, 'remove_bulk_actions' ) );
 		add_action( 'add_meta_boxes', array( $this, 'update_title_global' ) );
 		add_action( 'edit_form_after_title', array( $this, 'output_title_content' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
@@ -84,7 +82,7 @@ class WDSLP_Wds_Log extends CPT_Core {
 		}
 		$screen = get_current_screen();
 
-		if ( ! isset( $screen->id ) || $this->post_type !== $screen->id ) {
+		if ( ! isset( $screen->id ) || $this->plugin->key !== $screen->id ) {
 			return;
 		}
 
@@ -97,7 +95,7 @@ class WDSLP_Wds_Log extends CPT_Core {
 	}
 
 	function adjust_view_for_single_cpt( $columns, $screen_id, $screen ) {
-		if ( $this->post_type !== $screen_id ) {
+		if ( $this->plugin->key !== $screen_id ) {
 			return $columns;
 		}
 
@@ -108,7 +106,7 @@ class WDSLP_Wds_Log extends CPT_Core {
 		$screen->add_option( 'layout_columns', $columns );
 
 		remove_meta_box( 'submitdiv', $screen, 'side' );
-		remove_meta_box( 'slugdiv', $this->post_type, 'normal' );
+		remove_meta_box( 'slugdiv', $this->plugin->key, 'normal' );
 
 		return $columns;
 	}
@@ -175,7 +173,7 @@ jQuery( document ).ready( function( $ ) {
 	 * @return array
 	 */
 	public function alter_post_row_actions( $actions, $post ) {
-		if ( $this->post_type !== $post->post_type ) {
+		if ( $this->plugin->key !== $post->post_type ) {
 			return $actions;
 		}
 
@@ -212,7 +210,7 @@ jQuery( document ).ready( function( $ ) {
 	}
 
 	public function output_title_content( $post ) {
-		if ( ! isset( $post->post_type ) || $this->post_type !== $post->post_type ) {
+		if ( ! isset( $post->post_type ) || $this->plugin->key !== $post->post_type ) {
 			return;
 		}
 
@@ -304,6 +302,6 @@ jQuery( document ).ready( function( $ ) {
 		}
 
 		$screen = get_current_screen();
-		return null !== $screen && 'edit' === $screen->base && $this->post_type === $screen->post_type;
+		return null !== $screen && 'edit' === $screen->base && $this->plugin->key === $screen->post_type;
 	}
 }

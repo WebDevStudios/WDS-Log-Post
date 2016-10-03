@@ -143,9 +143,9 @@ class WDS_Log_Post {
 	 * @since  0.1.0
 	 * @return WDS_Log_Post A single instance of this class.
 	 */
-	public static function get_instance() {
+	public static function get_instance( $posttype, $name = '' ) {
 		if ( null === self::$single_instance ) {
-			self::$single_instance = new self();
+			self::$single_instance = new self( $posttype, $name = '' );
 		}
 
 		return self::$single_instance;
@@ -156,10 +156,17 @@ class WDS_Log_Post {
 	 *
 	 * @since  0.1.0
 	 */
-	protected function __construct() {
+	protected function __construct( $posttype = '', $log_name = '' ) {
 		$this->basename = plugin_basename( __FILE__ );
 		$this->url      = plugin_dir_url( __FILE__ );
 		$this->path     = plugin_dir_path( __FILE__ );
+		if ( !empty( $posttype ) ) {
+                    $this->key = $posttype;
+		}
+		$this->name = 'WDS';
+		if ( !empty( $log_name ) ) {
+                    $this->name = $log_name;
+		} 
 		$this->plugin_classes();
 	}
 
@@ -270,7 +277,7 @@ class WDS_Log_Post {
 		 *
 		 * @param bool $user_can_see Defaults to whether the current user "can" "administrator"
 		 */
-		$user_can_see = apply_filters( 'wds_log_post_user_can_see', $user_can_see );
+		$user_can_see = apply_filters( 'wds_log_' . str_replace( '-' , '_', $this->key ) . '_user_can_see', $user_can_see );
 
 		if ( ! $user_can_see ) {
 			global $wp_post_types;
@@ -395,6 +402,7 @@ class WDS_Log_Post {
 	/**
 	 * Creates a new log entry.
 	 *
+	 * @param string $posttype     The posttype where save the message.
 	 * @param string $title        The message for the error. Should be concise, as it will be the log entry title.
 	 * @param string $full_message A longer message, if desired. This can include more detail.
 	 * @param mixed  $term_slug    A string or array of log types to assign to this entry.
@@ -403,8 +411,8 @@ class WDS_Log_Post {
 	 *
 	 * @return int|WP_Error The ID of the log post, or WP_Error upon failure.
 	 */
-	public static function log_message( $title, $full_message = '', $term_slug = 'general', $log_post_id = null, $completed = false ) {
-		$self = self::get_instance();
+	public static function log_message( $posttype, $title, $full_message = '', $term_slug = 'general', $log_post_id = null, $completed = false ) {
+		$self = self::get_instance( $posttype );
 		if ( ! $self->custom_taxonomy->taxonomy_ready ) {
 			$self->custom_taxonomy->register_custom_taxonomy();
 		}
@@ -436,7 +444,7 @@ class WDS_Log_Post {
 
 			$log_post_id = wp_update_post( $log_post_arr );
 		} else {
-			$log_post_arr['post_type']    = $self->cpt->post_type;
+			$log_post_arr['post_type']    = $posttype;
 			$log_post_arr['post_content'] = $full_message;
 			$log_post_arr['post_author']  = self::get_lowest_user_id();
 			$log_post_id = wp_insert_post( $log_post_arr );
@@ -457,7 +465,7 @@ class WDS_Log_Post {
 			 *
 			 * @param bool $require_terms Whether terms are required to be pre-defined.
 			 */
-			if ( apply_filters( 'wds_log_post_require_defined_terms', true ) ) {
+			if ( apply_filters( 'wds_log_' . str_replace( '-' , '_', $posttype ) . '_require_defined_terms', true ) ) {
 				$terms = array();
 				foreach ( $term_slug as $term_lookup ) {
 					$term = get_term_by( 'slug', $term_lookup, $self->custom_taxonomy->taxonomy );
@@ -523,11 +531,19 @@ class WDS_Log_Post {
  * @since  0.1.0
  * @return WDS_Log_Post  Singleton instance of plugin class.
  */
-function wds_log_post() {
-	return WDS_Log_Post::get_instance();
+function wds_log_post( $posttype, $name ) {
+	return WDS_Log_Post::get_instance( $posttype, $name );
 }
 
+add_action( 'plugins_loaded', 'load_wds_log', 9999);
+function load_wds_log() {
 // Kick it off
-if ( apply_filters( 'wds_log_post_site_check', 'is_main_site' ) ) {
-	add_action( 'plugins_loaded', array( wds_log_post(), 'hooks' ) );
+    if ( apply_filters( 'wds_log_post_site_check', 'is_main_site' ) ) {
+    $posttypes = apply_filters( 'wds_log_post_types', array() );
+        if( count( $posttypes ) > 0){
+            foreach ( $posttypes as $posttype => $name ) {
+                wds_log_post( $posttype, $name )->hooks();
+            }
+        }
+    }
 }
