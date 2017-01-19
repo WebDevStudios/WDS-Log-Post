@@ -74,7 +74,7 @@ class WDS_Log_Post {
 	 * @var  string
 	 * @since  0.1.0
 	 */
-	const VERSION = '0.3.0';
+	const VERSION = '0.4.0';
 
 	/**
 	 * URL of plugin directory
@@ -166,7 +166,7 @@ class WDS_Log_Post {
 		$this->name = 'WDS';
 		if ( !empty( $log_name ) ) {
                     $this->name = $log_name;
-		} 
+		}
 		$this->plugin_classes();
 	}
 
@@ -460,7 +460,7 @@ class WDS_Log_Post {
 			 * Filter whether pre-defined terms are required.
 			 *
 			 * If pre-defined terms are not required, then unknown terms will be added.
-			 * 
+			 *
 			 * @since 0.3.0
 			 * @author Jeremy Pry
 			 *
